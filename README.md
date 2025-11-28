@@ -12,7 +12,7 @@
 *   **`gitlab/`** - GitLab CE (Omnibus) — полноценный DevOps-сервис
 *   **`gitlab-runner/`** - агент для выполнения CI/CD задач GitLab
 *   **`foreman/`** - управление жизненным циклом хостов
-*   **`1c/`** - платформа 1С:Предприятие
+*   **`1c/`** - сервер 1С:Предприятие 8
 *   **`postgres/`** - база данных PostgreSQL
 *   ... и другие.
 
@@ -96,6 +96,50 @@ sudo ./install.sh \
 ```
 
 Подробнее: [gitlab-runner/README.md](gitlab-runner/README.md)
+
+### 5. Пример: Установка сервера 1С:Предприятие 8
+
+```bash
+cd run-in-lxc/1c
+
+# Скачивание с releases.1c.ru
+sudo ./install.sh \
+  --version 8.3.25.1257 \
+  --its-login user@example.com \
+  --its-password YourPassword
+
+# Или из локального каталога с дистрибутивами
+sudo ./install.sh --distrib-dir /opt/distrib/1c
+
+# Полная установка с сервером хранилища и веб-расширениями
+sudo ./install.sh \
+  --version 8.3.25.1257 \
+  --its-login user@example.com \
+  --its-password YourPassword \
+  --with-crs --with-ws
+```
+
+Подробнее: [1c/README.md](1c/README.md)
+
+### 6. Пример: Установка Foreman
+
+```bash
+cd run-in-lxc/foreman
+
+# Минимальная установка (встроенные PostgreSQL и Redis)
+sudo ./install.sh
+
+# С проверками и конкретной версией
+sudo ./install.sh --version 3.16 --check
+
+# С внешней базой данных
+sudo ./install.sh \
+  --db-host 192.168.1.100 \
+  --db-user foreman \
+  --db-password SecurePass123
+```
+
+Подробнее: [foreman/README.md](foreman/README.md)
 
 ## Документация
 
