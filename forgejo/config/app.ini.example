@@ -1,0 +1,97 @@
+# Пример конфигурации app.ini для Forgejo
+
+# Этот файл создается автоматически скриптом install.sh
+# Вы можете использовать его как шаблон для ручной настройки
+
+APP_NAME = Forgejo: Git with a cup of tea
+RUN_MODE = prod
+RUN_USER = forgejo
+
+[server]
+DOMAIN           = localhost
+HTTP_PORT        = 3000
+ROOT_URL         = http://localhost:3000/
+DISABLE_SSH      = false
+SSH_PORT         = 2222
+START_SSH_SERVER = true
+LFS_START_SERVER = true
+OFFLINE_MODE     = false
+
+[database]
+DB_TYPE  = postgres
+HOST     = localhost:5432
+NAME     = forgejo
+USER     = forgejo
+PASSWD   = your_password_here
+SSL_MODE = disable
+CHARSET  = utf8
+
+[repository]
+ROOT = /var/lib/forgejo/data/gitea-repositories
+
+[repository.local]
+LOCAL_COPY_PATH = /var/lib/forgejo/data/tmp/local-repo
+
+[repository.upload]
+TEMP_PATH = /var/lib/forgejo/data/tmp/uploads
+
+[log]
+MODE      = console, file
+LEVEL     = info
+ROOT_PATH = /var/lib/forgejo/log
+
+[security]
+INSTALL_LOCK   = false
+SECRET_KEY     = 
+INTERNAL_TOKEN = 
+
+[service]
+DISABLE_REGISTRATION              = false
+REQUIRE_SIGNIN_VIEW               = false
+REGISTER_EMAIL_CONFIRM            = false
+ENABLE_NOTIFY_MAIL                = false
+ALLOW_ONLY_EXTERNAL_REGISTRATION  = false
+ENABLE_CAPTCHA                    = false
+DEFAULT_KEEP_EMAIL_PRIVATE        = false
+DEFAULT_ALLOW_CREATE_ORGANIZATION = true
+DEFAULT_ENABLE_TIMETRACKING       = true
+NO_REPLY_ADDRESS                  = noreply.localhost
+
+[picture]
+DISABLE_GRAVATAR        = false
+ENABLE_FEDERATED_AVATAR = true
+
+[openid]
+ENABLE_OPENID_SIGNIN = false
+ENABLE_OPENID_SIGNUP = false
+
+[session]
+PROVIDER = file
+
+[mailer]
+ENABLED = false
+
+# Дополнительные опции для продакшена:
+
+# [server]
+# CERT_FILE = /path/to/cert.pem
+# KEY_FILE  = /path/to/key.pem
+# PROTOCOL  = https
+
+# [mailer]
+# ENABLED = true
+# FROM = forgejo@example.com
+# MAILER_TYPE = smtp
+# HOST = smtp.example.com:587
+# IS_TLS_ENABLED = true
+# USER = forgejo@example.com
+# PASSWD = smtp_password
+
+# [cache]
+# ENABLED = true
+# ADAPTER = redis
+# HOST = redis://127.0.0.1:6379/0
+
+# [queue]
+# TYPE = redis
+# CONN_STR = redis://127.0.0.1:6379/0
