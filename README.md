@@ -9,6 +9,8 @@
 ### Приложения для установки в LXC
 
 *   **`forgejo/`** - легковесный git-сервис (форк Gitea)
+*   **`gitlab/`** - GitLab CE (Omnibus) — полноценный DevOps-сервис
+*   **`gitlab-runner/`** - агент для выполнения CI/CD задач GitLab
 *   **`foreman/`** - управление жизненным циклом хостов
 *   **`1c/`** - платформа 1С:Предприятие
 *   **`postgres/`** - база данных PostgreSQL
@@ -53,6 +55,47 @@ cd run-in-lxc/forgejo
 ```
 
 Подробнее: [forgejo/README.md](forgejo/README.md)
+
+### 3. Пример: Установка GitLab CE
+
+```bash
+# В контейнере (мин. 4GB RAM, рекомендуется 8GB)
+cd run-in-lxc/gitlab
+
+# Минимальная установка (встроенные PostgreSQL и Redis)
+sudo ./install.sh --domain gitlab.example.com
+
+# Или с внешней базой данных
+sudo ./install.sh \
+  --domain gitlab.example.com \
+  --db-host 192.168.1.100 \
+  --db-name gitlabhq_production \
+  --db-user gitlab \
+  --db-password SecurePass123
+```
+
+Подробнее: [gitlab/README.md](gitlab/README.md)
+
+### 4. Пример: Установка GitLab Runner
+
+```bash
+cd run-in-lxc/gitlab-runner
+
+# Shell executor
+sudo ./install.sh \
+  --url https://gitlab.example.com \
+  --token glrt-XXXXXXXXXXXXXXXXXXXX \
+  --executor shell
+
+# Docker executor
+sudo ./install.sh \
+  --url https://gitlab.example.com \
+  --token glrt-XXXXXXXXXXXXXXXXXXXX \
+  --executor docker \
+  --install-docker
+```
+
+Подробнее: [gitlab-runner/README.md](gitlab-runner/README.md)
 
 ## Документация
 

@@ -1,0 +1,189 @@
+# Пример конфигурации gitlab.rb для GitLab CE
+#
+# Этот файл содержит примеры наиболее часто используемых настроек.
+# Полная документация: https://docs.gitlab.com/omnibus/settings/
+#
+# После изменения конфигурации выполните:
+#   sudo gitlab-ctl reconfigure
+
+##############################################
+# Основные настройки
+##############################################
+
+# URL для доступа к GitLab
+external_url 'http://gitlab.example.com'
+
+# Часовой пояс
+gitlab_rails['time_zone'] = 'Europe/Moscow'
+
+##############################################
+# Внешняя база данных PostgreSQL
+##############################################
+
+# Раскомментируйте для использования внешней БД:
+
+# postgresql['enable'] = false
+#
+# gitlab_rails['db_adapter'] = 'postgresql'
+# gitlab_rails['db_encoding'] = 'unicode'
+# gitlab_rails['db_host'] = '192.168.1.100'
+# gitlab_rails['db_port'] = 5432
+# gitlab_rails['db_database'] = 'gitlabhq_production'
+# gitlab_rails['db_username'] = 'gitlab'
+# gitlab_rails['db_password'] = 'your_password_here'
+
+##############################################
+# Внешний Redis
+##############################################
+
+# Раскомментируйте для использования внешнего Redis:
+
+# redis['enable'] = false
+#
+# gitlab_rails['redis_host'] = '192.168.1.101'
+# gitlab_rails['redis_port'] = 6379
+# gitlab_rails['redis_password'] = 'your_redis_password'  # опционально
+
+##############################################
+# HTTPS с Let's Encrypt
+##############################################
+
+# Для автоматического получения сертификата:
+
+# external_url 'https://gitlab.example.com'
+# letsencrypt['enable'] = true
+# letsencrypt['contact_emails'] = ['admin@example.com']
+# letsencrypt['auto_renew'] = true
+# letsencrypt['auto_renew_hour'] = 0
+# letsencrypt['auto_renew_minute'] = 30
+# letsencrypt['auto_renew_day_of_month'] = "*/7"
+
+##############################################
+# HTTPS со своим сертификатом
+##############################################
+
+# external_url 'https://gitlab.example.com'
+# nginx['ssl_certificate'] = '/etc/gitlab/ssl/gitlab.example.com.crt'
+# nginx['ssl_certificate_key'] = '/etc/gitlab/ssl/gitlab.example.com.key'
+# nginx['redirect_http_to_https'] = true
+
+##############################################
+# Настройки производительности
+##############################################
+
+# Количество воркеров Puma (уменьшите при нехватке RAM)
+# puma['worker_processes'] = 4
+
+# Количество потоков на воркер
+# puma['min_threads'] = 4
+# puma['max_threads'] = 4
+
+# Количество воркеров Sidekiq
+# sidekiq['concurrency'] = 25
+
+# Отключение мониторинга (экономит ресурсы)
+# prometheus_monitoring['enable'] = false
+
+##############################################
+# Email / SMTP
+##############################################
+
+# gitlab_rails['smtp_enable'] = true
+# gitlab_rails['smtp_address'] = 'smtp.example.com'
+# gitlab_rails['smtp_port'] = 587
+# gitlab_rails['smtp_user_name'] = 'gitlab@example.com'
+# gitlab_rails['smtp_password'] = 'smtp_password'
+# gitlab_rails['smtp_domain'] = 'example.com'
+# gitlab_rails['smtp_authentication'] = 'login'
+# gitlab_rails['smtp_enable_starttls_auto'] = true
+# gitlab_rails['smtp_tls'] = false
+#
+# gitlab_rails['gitlab_email_from'] = 'gitlab@example.com'
+# gitlab_rails['gitlab_email_reply_to'] = 'noreply@example.com'
+
+##############################################
+# Резервное копирование
+##############################################
+
+# Хранение бэкапов (в секундах, 604800 = 7 дней)
+# gitlab_rails['backup_keep_time'] = 604800
+
+# Путь для бэкапов
+# gitlab_rails['backup_path'] = '/var/opt/gitlab/backups'
+
+# Загрузка бэкапов в облако (S3)
+# gitlab_rails['backup_upload_connection'] = {
+#   'provider' => 'AWS',
+#   'region' => 'eu-west-1',
+#   'aws_access_key_id' => 'your_access_key',
+#   'aws_secret_access_key' => 'your_secret_key'
+# }
+# gitlab_rails['backup_upload_remote_directory'] = 'my-gitlab-backups'
+
+##############################################
+# Ограничение регистрации
+##############################################
+
+# Отключить самостоятельную регистрацию
+# gitlab_rails['gitlab_signup_enabled'] = false
+
+# Разрешить регистрацию только с определенных доменов
+# gitlab_rails['domain_allowlist'] = ['example.com', 'company.com']
+
+##############################################
+# GitLab Pages
+##############################################
+
+# pages_external_url 'http://pages.example.com'
+# gitlab_pages['enable'] = true
+
+##############################################
+# Container Registry
+##############################################
+
+# registry_external_url 'https://registry.example.com'
+# gitlab_rails['registry_enabled'] = true
+
+##############################################
+# Мониторинг (Prometheus + Grafana)
+##############################################
+
+# prometheus['enable'] = true
+# grafana['enable'] = true
+# grafana['admin_password'] = 'grafana_admin_password'
+
+##############################################
+# Nginx (reverse proxy)
+##############################################
+
+# Если GitLab за внешним reverse proxy:
+# nginx['listen_port'] = 80
+# nginx['listen_https'] = false
+# nginx['proxy_set_headers'] = {
+#   "X-Forwarded-Proto" => "https",
+#   "X-Forwarded-Ssl" => "on"
+# }
+
+# Кастомные настройки nginx:
+# nginx['custom_nginx_config'] = "include /etc/gitlab/nginx/custom/*.conf;"
+
+##############################################
+# Логирование
+##############################################
+
+# Уровень логирования
+# gitlab_rails['log_level'] = 'info'
+
+# Логирование в JSON (удобно для парсинга)
+# nginx['access_log_format'] = 'json'
+
+##############################################
+# Git настройки
+##############################################
+
+# Максимальный размер push
+# gitlab_rails['git_max_size'] = 52428800  # 50 MB
+
+# Timeout для git операций
+# gitlab_rails['git_timeout'] = 10
+
