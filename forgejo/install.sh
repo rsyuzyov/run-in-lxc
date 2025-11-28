@@ -198,7 +198,7 @@ if [ "$INSTALL_LOCAL_POSTGRES" = true ]; then
     print_info "Создание базы данных и пользователя..."
     
     # Создание пользователя и базы данных
-    sudo -u postgres psql << EOF
+    su - postgres -c "psql" << EOF
 -- Создание пользователя
 CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';
 

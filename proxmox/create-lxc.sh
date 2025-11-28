@@ -32,6 +32,7 @@ CT_SSH_KEY=""
 CT_UNPRIVILEGED="1"
 CT_FEATURES="nesting=1,keyctl=1"
 CT_START="0"
+CT_BOOTSTRAP="0"
 DRY_RUN="0"
 
 # Функции для вывода
@@ -82,6 +83,7 @@ show_help() {
   --unprivileged 0|1      Непривилегированный контейнер (по умолчанию: 1)
   --features FEATURES     Возможности (по умолчанию: nesting=1,keyctl=1)
   --start                 Запустить контейнер после создания
+  --bootstrap             Выполнить базовую настройку (обновление, локали, ssh)
   --dry-run               Показать команды без выполнения
   --help                  Показать эту справку
 
@@ -172,6 +174,11 @@ while [[ $# -gt 0 ]]; do
             CT_START="1"
             shift
             ;;
+        --bootstrap)
+            CT_BOOTSTRAP="1"
+            CT_START="1" # Bootstrap требует запущенного контейнера
+            shift
+            ;;
         --dry-run)
             DRY_RUN="1"
             shift
@@ -249,15 +256,24 @@ if [ -z "$CT_PASSWORD" ]; then
     print_info "Сгенерирован пароль root"
 fi
 
+# Определение хранилища для шаблонов (должно поддерживать vztmpl)
+print_info "Определение хранилища для шаблонов..."
+TEMPLATE_STORAGE=$(pvesm status -content vztmpl | awk 'NR==2 {print $1}')
+
+if [ -z "$TEMPLATE_STORAGE" ]; then
+    print_error "Не найдено хранилище с поддержкой шаблонов (vztmpl)!"
+    exit 1
+fi
+print_info "Хранилище для шаблонов: $TEMPLATE_STORAGE"
+
 # Проверка и загрузка шаблона
 print_info "Проверка наличия шаблона $CT_TEMPLATE..."
 
-# Определяем полное имя шаблона
-TEMPLATE_FULL="${CT_TEMPLATE}_*.tar.*"
-TEMPLATE_PATH=$(pveam list $CT_STORAGE 2>/dev/null | grep -i "$CT_TEMPLATE" | awk '{print $1}' | head -1 || echo "")
+# Проверяем наличие шаблона в хранилище для шаблонов
+TEMPLATE_PATH=$(pveam list $TEMPLATE_STORAGE 2>/dev/null | grep -i "$CT_TEMPLATE" | awk '{print $1}' | head -1 || echo "")
 
 if [ -z "$TEMPLATE_PATH" ]; then
-    print_warn "Шаблон $CT_TEMPLATE не найден в хранилище $CT_STORAGE"
+    print_warn "Шаблон $CT_TEMPLATE не найден в хранилище $TEMPLATE_STORAGE"
     print_info "Обновление списка доступных шаблонов..."
     
     if [ "$DRY_RUN" -eq 0 ]; then
@@ -278,12 +294,12 @@ if [ -z "$TEMPLATE_PATH" ]; then
     
     print_info "Загрузка шаблона $AVAILABLE_TEMPLATE..."
     if [ "$DRY_RUN" -eq 0 ]; then
-        pveam download $CT_STORAGE $AVAILABLE_TEMPLATE
+        pveam download $TEMPLATE_STORAGE $AVAILABLE_TEMPLATE
     else
-        print_debug "DRY-RUN: pveam download $CT_STORAGE $AVAILABLE_TEMPLATE"
+        print_debug "DRY-RUN: pveam download $TEMPLATE_STORAGE $AVAILABLE_TEMPLATE"
     fi
     
-    TEMPLATE_PATH="$CT_STORAGE:vztmpl/$AVAILABLE_TEMPLATE"
+    TEMPLATE_PATH="$TEMPLATE_STORAGE:vztmpl/$AVAILABLE_TEMPLATE"
 else
     print_info "Шаблон найден: $TEMPLATE_PATH"
 fi
@@ -419,6 +435,23 @@ if [ "$CT_START" -eq 1 ]; then
         fi
     else
         print_warn "Не удалось запустить контейнер"
+    fi
+fi
+
+# Запуск bootstrap если указано
+if [ "$CT_BOOTSTRAP" -eq 1 ] && [ "$CT_START" -eq 1 ]; then
+    print_info "Запуск базовой настройки..."
+    
+    # Путь к скрипту bootstrap
+    SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+    BOOTSTRAP_SCRIPT="$SCRIPT_DIR/bootstrap-lxc.sh"
+    
+    if [ -f "$BOOTSTRAP_SCRIPT" ]; then
+        # Ждем немного, чтобы сеть поднялась
+        sleep 5
+        "$BOOTSTRAP_SCRIPT" "$CT_ID"
+    else
+        print_error "Скрипт bootstrap не найден: $BOOTSTRAP_SCRIPT"
     fi
 fi
 

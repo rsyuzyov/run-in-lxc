@@ -24,7 +24,7 @@
 
 ```bash
 cd proxmox
-sudo ./create-lxc.sh --name my-container --start
+sudo ./create-lxc.sh --name my-container --bootstrap --start
 ```
 
 Подробнее: [proxmox/README.md](proxmox/README.md)
