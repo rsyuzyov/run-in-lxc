@@ -455,9 +455,28 @@ if [ "$CT_BOOTSTRAP" -eq 1 ] && [ "$CT_START" -eq 1 ]; then
     fi
 fi
 
+# Сохранение учетных данных в файл
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+CREDENTIALS_DIR="$SCRIPT_DIR/credentials"
+mkdir -p "$CREDENTIALS_DIR"
+CREDENTIALS_FILE="$CREDENTIALS_DIR/${CT_ID}_${CT_NAME}.txt"
+
+cat > "$CREDENTIALS_FILE" << EOF
+ID:              $CT_ID
+Имя:             $CT_NAME
+IP:              ${CT_IP:-$DHCP_IP (DHCP)}
+Пользователь:    root
+Пароль:          $CT_PASSWORD
+Дата создания:   $(date)
+EOF
+
+chmod 600 "$CREDENTIALS_FILE"
+
 # Итоговая информация
 echo ""
 print_info "=== Контейнер готов к использованию ==="
+echo ""
+print_info "Учетные данные сохранены в: $CREDENTIALS_FILE"
 echo ""
 print_info "Информация для подключения:"
 echo "  ID:              $CT_ID"
