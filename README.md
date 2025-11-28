@@ -24,8 +24,13 @@
 
 ```bash
 cd proxmox
-sudo ./create-lxc.sh --name my-container --bootstrap --start
+sudo ./create-lxc.sh --name my-container --bootstrap
 ```
+
+Скрипт автоматически:
+- Создаст контейнер
+- Выполнит базовую настройку (обновление, локали, SSH)
+- Сохранит пароль root в `proxmox/credentials/`
 
 Подробнее: [proxmox/README.md](proxmox/README.md)
 
