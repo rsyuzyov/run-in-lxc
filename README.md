@@ -8,6 +8,7 @@
 
 ### Приложения для установки в LXC
 
+*   **`apache/`** - веб-сервер Apache HTTP Server
 *   **`forgejo/`** - легковесный git-сервис (форк Gitea)
 *   **`gitlab/`** - GitLab CE (Omnibus) — полноценный DevOps-сервис
 *   **`gitlab-runner/`** - агент для выполнения CI/CD задач GitLab
@@ -140,6 +141,33 @@ sudo ./install.sh \
 ```
 
 Подробнее: [foreman/README.md](foreman/README.md)
+
+### 7. Пример: Установка Apache
+
+```bash
+cd run-in-lxc/apache
+
+# Базовая установка
+sudo ./install.sh
+
+# С виртуальным хостом и SSL
+sudo ./install.sh --domain example.com --ssl
+
+# С Let's Encrypt и PHP
+sudo ./install.sh \
+  --domain example.com \
+  --email admin@example.com \
+  --letsencrypt \
+  --php
+
+# Как обратный прокси
+sudo ./install.sh \
+  --domain app.example.com \
+  --proxy-pass http://localhost:3000 \
+  --ssl
+```
+
+Подробнее: [apache/README.md](apache/README.md)
 
 ## Документация
 
