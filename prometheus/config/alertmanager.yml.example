@@ -1,0 +1,176 @@
+# Alertmanager Configuration Example
+# Расширенный пример конфигурации
+
+global:
+  # Время ожидания перед отправкой resolved уведомления
+  resolve_timeout: 5m
+
+  # SMTP настройки (для email уведомлений)
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_from: 'alertmanager@example.com'
+  smtp_auth_username: 'alertmanager@example.com'
+  smtp_auth_password: 'your-smtp-password'
+  smtp_require_tls: true
+
+  # Slack webhook URL (опционально)
+  # slack_api_url: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
+
+# Шаблоны уведомлений
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Маршрутизация алертов
+route:
+  # Группировка алертов
+  group_by: ['alertname', 'severity', 'instance']
+  
+  # Время ожидания перед отправкой первой группы
+  group_wait: 30s
+  
+  # Интервал между отправками группы
+  group_interval: 5m
+  
+  # Интервал повторной отправки
+  repeat_interval: 4h
+  
+  # Получатель по умолчанию
+  receiver: 'default'
+
+  # Дочерние маршруты
+  routes:
+    # Критические алерты - немедленная отправка
+    - match:
+        severity: critical
+      receiver: 'critical'
+      group_wait: 10s
+      repeat_interval: 1h
+      continue: true
+
+    # Алерты по инфраструктуре
+    - match_re:
+        alertname: ^(InstanceDown|DiskSpace.*|HighMemory.*|HighCPU.*)$
+      receiver: 'infrastructure'
+      
+    # Алерты по приложениям
+    - match:
+        job: blackbox-http
+      receiver: 'applications'
+      
+    # SSL алерты
+    - match_re:
+        alertname: ^SSL.*$
+      receiver: 'ssl-alerts'
+      repeat_interval: 24h
+
+    # Proxmox алерты
+    - match:
+        job: proxmox
+      receiver: 'proxmox'
+
+# Получатели уведомлений
+receivers:
+  #############################################
+  # Default receiver
+  #############################################
+  - name: 'default'
+    # Просто логирование (placeholder)
+    
+  #############################################
+  # Critical alerts - все каналы
+  #############################################
+  - name: 'critical'
+    email_configs:
+      - to: 'oncall@example.com'
+        send_resolved: true
+        headers:
+          Subject: '🔴 CRITICAL: {{ .GroupLabels.alertname }}'
+    
+    # Telegram
+    telegram_configs:
+      - bot_token: '123456789:ABCdefGHIjklMNOpqrsTUVwxyz'
+        chat_id: -1001234567890
+        send_resolved: true
+        message: |
+          🔴 *CRITICAL ALERT*
+          
+          *Alert:* {{ .GroupLabels.alertname }}
+          *Instance:* {{ .CommonLabels.instance }}
+          *Severity:* {{ .CommonLabels.severity }}
+          
+          {{ range .Alerts }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+    
+    # Webhook (для интеграции с другими системами)
+    webhook_configs:
+      - url: 'http://alertmanager-webhook:5001/critical'
+        send_resolved: true
+
+  #############################################
+  # Infrastructure alerts
+  #############################################
+  - name: 'infrastructure'
+    email_configs:
+      - to: 'infra-team@example.com'
+        send_resolved: true
+        headers:
+          Subject: '⚠️ Infrastructure: {{ .GroupLabels.alertname }}'
+    
+    telegram_configs:
+      - bot_token: '123456789:ABCdefGHIjklMNOpqrsTUVwxyz'
+        chat_id: -1001234567891  # Отдельный чат для инфраструктуры
+        send_resolved: true
+
+  #############################################
+  # Application alerts (HTTP checks)
+  #############################################
+  - name: 'applications'
+    email_configs:
+      - to: 'dev-team@example.com'
+        send_resolved: true
+    
+    # Slack
+    # slack_configs:
+    #   - channel: '#alerts-apps'
+    #     send_resolved: true
+    #     title: '{{ .GroupLabels.alertname }}'
+    #     text: '{{ .CommonAnnotations.description }}'
+
+  #############################################
+  # SSL certificate alerts
+  #############################################
+  - name: 'ssl-alerts'
+    email_configs:
+      - to: 'security@example.com'
+        send_resolved: true
+        headers:
+          Subject: '🔐 SSL Certificate: {{ .GroupLabels.alertname }}'
+
+  #############################################
+  # Proxmox alerts
+  #############################################
+  - name: 'proxmox'
+    email_configs:
+      - to: 'infra-team@example.com'
+        send_resolved: true
+        headers:
+          Subject: '🖥️ Proxmox: {{ .GroupLabels.alertname }}'
+
+# Правила подавления (inhibition)
+inhibit_rules:
+  # Подавить warning если есть critical для того же alertname/instance
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+  
+  # Подавить все алерты если хост недоступен
+  - source_match:
+      alertname: 'InstanceDown'
+    target_match_re:
+      alertname: '.+'
+    equal: ['instance']
+
+# Время тишины (silences) настраиваются через UI или amtool
+

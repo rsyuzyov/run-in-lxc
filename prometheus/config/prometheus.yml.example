@@ -1,0 +1,204 @@
+# Prometheus Configuration Example
+# Расширенный пример конфигурации
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'prometheus-production'
+    environment: 'prod'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - localhost:9093
+
+# Rule files
+rule_files:
+  - "rules/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  #############################################
+  # Собственные метрики Prometheus
+  #############################################
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          instance: 'prometheus-main'
+
+  #############################################
+  # Node Exporter - метрики хостов
+  #############################################
+  - job_name: 'node'
+    # Локальный Node Exporter
+    static_configs:
+      - targets: ['localhost:9100']
+        labels:
+          instance: 'prometheus-host'
+    
+  # Дополнительные хосты через file_sd
+  - job_name: 'node-exporters'
+    file_sd_configs:
+      - files:
+          - 'targets/nodes.yml'
+        refresh_interval: 30s
+    relabel_configs:
+      # Извлечь hostname из адреса для красивого отображения
+      - source_labels: [__address__]
+        regex: '(.+):\d+'
+        target_label: hostname
+        replacement: '${1}'
+
+  #############################################
+  # Blackbox Exporter - HTTP/TCP/ICMP проверки
+  #############################################
+  - job_name: 'blackbox'
+    static_configs:
+      - targets: ['localhost:9115']
+
+  # HTTP проверки
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    file_sd_configs:
+      - files:
+          - 'targets/blackbox-http.yml'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9115
+
+  # HTTPS с проверкой SSL
+  - job_name: 'blackbox-https-ssl'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    file_sd_configs:
+      - files:
+          - 'targets/blackbox-https.yml'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9115
+
+  # TCP проверки (порты)
+  - job_name: 'blackbox-tcp'
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    file_sd_configs:
+      - files:
+          - 'targets/blackbox-tcp.yml'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9115
+
+  # ICMP проверки (ping)
+  - job_name: 'blackbox-icmp'
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    file_sd_configs:
+      - files:
+          - 'targets/blackbox-icmp.yml'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9115
+
+  #############################################
+  # PostgreSQL Exporter
+  #############################################
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['localhost:9187']
+        labels:
+          db: 'main'
+    # Дополнительные PostgreSQL серверы
+    file_sd_configs:
+      - files:
+          - 'targets/postgres.yml'
+
+  #############################################
+  # Proxmox VE
+  #############################################
+  - job_name: 'proxmox'
+    static_configs:
+      - targets: ['192.168.1.100:8006']
+        labels:
+          cluster: 'main'
+    metrics_path: /pve
+    params:
+      module: [default]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9221
+
+  #############################################
+  # Docker containers (если используется)
+  #############################################
+  # - job_name: 'docker'
+  #   static_configs:
+  #     - targets: ['localhost:9323']
+
+  #############################################
+  # Nginx (если используется nginx_exporter)
+  #############################################
+  # - job_name: 'nginx'
+  #   static_configs:
+  #     - targets: ['localhost:9113']
+
+  #############################################
+  # Redis (если используется redis_exporter)
+  #############################################
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['localhost:9121']
+
+  #############################################
+  # GitLab (встроенные метрики)
+  #############################################
+  # - job_name: 'gitlab'
+  #   static_configs:
+  #     - targets: ['gitlab.example.com:9168']
+  #   scheme: https
+  #   tls_config:
+  #     insecure_skip_verify: true
+
+  #############################################
+  # Kubernetes (если используется)
+  #############################################
+  # - job_name: 'kubernetes-apiservers'
+  #   kubernetes_sd_configs:
+  #     - role: endpoints
+  #   scheme: https
+  #   tls_config:
+  #     ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+  #   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+  #   relabel_configs:
+  #     - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+  #       action: keep
+  #       regex: default;kubernetes;https
+

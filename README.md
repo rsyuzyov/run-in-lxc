@@ -9,13 +9,22 @@
 ### Приложения для установки в LXC
 
 *   **`apache/`** - веб-сервер Apache HTTP Server
+*   **`docker/`** - Docker CE с поддержкой зеркал и проверкой совместимости LXC
+*   **`nginx/`** - веб-сервер Nginx
 *   **`forgejo/`** - легковесный git-сервис (форк Gitea)
 *   **`gitlab/`** - GitLab CE (Omnibus) — полноценный DevOps-сервис
 *   **`gitlab-runner/`** - агент для выполнения CI/CD задач GitLab
 *   **`foreman/`** - управление жизненным циклом хостов
 *   **`1c/`** - сервер 1С:Предприятие 8
 *   **`postgres/`** - база данных PostgreSQL
-*   ... и другие.
+*   **`prometheus/`** - система мониторинга и алертинга (Prometheus + Node Exporter + Blackbox Exporter)
+
+### Kubernetes (в LXC/VM)
+
+*   **`kubernetes/`** - развёртывание Kubernetes кластеров
+    * **`k3s/`** - легковесный Kubernetes от Rancher (рекомендуется для dev/test)
+    * **`k0s/`** - Zero Friction Kubernetes от Mirantis (рекомендуется для production)
+    * **`common/`** - общие утилиты (подготовка LXC, addons: Helm, MetalLB, Longhorn)
 
 ### Утилиты управления
 
@@ -168,6 +177,106 @@ sudo ./install.sh \
 ```
 
 Подробнее: [apache/README.md](apache/README.md)
+
+### 8. Пример: Установка Docker
+
+```bash
+cd run-in-lxc/docker
+
+# Базовая установка
+sudo ./install.sh
+
+# С зеркалом Docker Hub (быстрее)
+sudo ./install.sh --mirror https://mirror.gcr.io
+
+# С приватным registry без SSL
+sudo ./install.sh --insecure-registries registry.local:5000
+
+# Только проверка совместимости LXC
+sudo ./install.sh --check
+```
+
+Подробнее: [docker/README.md](docker/README.md)
+
+### 9. Пример: Установка Prometheus Stack
+
+```bash
+cd run-in-lxc/prometheus
+
+# Базовая установка (Prometheus + Node Exporter + Blackbox Exporter)
+sudo ./install.sh
+
+# С Alertmanager и удалённым доступом (для Grafana)
+sudo ./install.sh --alertmanager --allow-remote
+
+# Полная установка с мониторингом Proxmox VE
+sudo ./install.sh --alertmanager --allow-remote --proxmox \
+  --proxmox-host 192.168.1.100:8006 \
+  --proxmox-user prometheus@pve \
+  --proxmox-token-id monitoring \
+  --proxmox-token-secret xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+# С мониторингом PostgreSQL
+sudo ./install.sh --postgres-exporter \
+  --pg-host 192.168.1.50 \
+  --pg-user prometheus \
+  --pg-password SecurePass123
+```
+
+Рекомендуемые ресурсы LXC: 2 CPU, 4 GB RAM, 20 GB диска.
+
+Подробнее: [prometheus/README.md](prometheus/README.md)
+
+### 10. Пример: Установка Kubernetes (K3s)
+
+```bash
+# 1. На хосте Proxmox: создание LXC с настройками для K8s
+cd run-in-lxc/kubernetes/common
+sudo ./prepare-lxc.sh --create --name k8s --memory 4096 --cores 2
+
+# 2. В контейнере: установка K3s (single-node)
+cd run-in-lxc/kubernetes/k3s
+sudo ./install.sh --mode single
+
+# 3. Проверка
+kubectl get nodes
+kubectl get pods -A
+
+# Multi-node кластер:
+# Master
+sudo ./install.sh --mode server --cluster-init
+
+# Workers (на других узлах)
+sudo ./install.sh --mode agent \
+  --server https://<MASTER_IP>:6443 \
+  --token <TOKEN>
+```
+
+**Альтернатива: k0s** (для production):
+
+```bash
+cd run-in-lxc/kubernetes/k0s
+sudo ./install.sh --role single
+```
+
+**Дополнительные компоненты:**
+
+```bash
+cd run-in-lxc/kubernetes/common/addons
+
+# Helm (менеджер пакетов)
+./install-helm.sh
+
+# MetalLB (LoadBalancer для bare-metal)
+./install-metallb.sh --address-pool 192.168.1.200-192.168.1.220
+
+# Longhorn (распределённое хранилище)
+./install-longhorn.sh
+```
+
+Рекомендуемые ресурсы: 2+ CPU, 4+ GB RAM, 40+ GB диска.
+
+Подробнее: [kubernetes/README.md](kubernetes/README.md)
 
 ## Документация
 

@@ -1,0 +1,100 @@
+# k0s Configuration Example
+# Путь: /etc/k0s/k0s.yaml
+# Генерация: k0s config create > /etc/k0s/k0s.yaml
+# Документация: https://docs.k0sproject.io/stable/configuration/
+
+apiVersion: k0s.k0sproject.io/v1beta1
+kind: ClusterConfig
+metadata:
+  name: my-cluster
+spec:
+  api:
+    # Адрес API сервера
+    address: 192.168.1.100
+    # Порт API
+    port: 6443
+    # Дополнительные SAN для TLS
+    sans:
+      - k8s.example.com
+      - 192.168.1.100
+    # Внешний адрес (для NAT)
+    # externalAddress: 203.0.113.100
+
+  # Настройки хранилища
+  storage:
+    # etcd или kine (SQLite/MySQL/PostgreSQL)
+    type: etcd
+    # etcd:
+    #   peerAddress: 192.168.1.100
+    # kine:
+    #   dataSource: "sqlite:///var/lib/k0s/db/state.db"
+
+  # Сетевые настройки
+  network:
+    # CNI провайдер: kube-router, calico, custom
+    provider: kube-router
+    # CIDR для подов
+    podCIDR: 10.244.0.0/16
+    # CIDR для сервисов
+    serviceCIDR: 10.96.0.0/12
+    # Домен кластера
+    clusterDomain: cluster.local
+
+    # Настройки kube-router
+    kubeRouter:
+      # Включить hairpin mode
+      hairpin: Enabled
+      # IP-in-IP туннелирование
+      ipMasq: true
+      # Метрики
+      metricsPort: 8080
+
+    # Настройки Calico (если provider: calico)
+    # calico:
+    #   mode: vxlan
+    #   vxlanPort: 4789
+    #   mtu: 1450
+
+  # Настройки control plane
+  controllerManager:
+    extraArgs: {}
+
+  scheduler:
+    extraArgs: {}
+
+  # Расширения
+  extensions:
+    storage:
+      # Создать default StorageClass
+      create_default_storage_class: false
+      type: external_storage
+
+    helm:
+      # Helm charts для автоустановки
+      charts: []
+      # repositories: []
+      # Пример:
+      # charts:
+      #   - name: traefik
+      #     chartname: traefik/traefik
+      #     version: "21.0.0"
+      #     namespace: traefik
+      #     values: |
+      #       ports:
+      #         web:
+      #           port: 8000
+
+  # Telemetry
+  telemetry:
+    enabled: false
+
+  # Установка компонентов
+  installConfig:
+    users:
+      # Создать пользователей для сервисов
+      etcdUser: etcd
+      kineUser: kube-apiserver
+      konnectivityUser: konnectivity-server
+      kubeAPIserverUser: kube-apiserver
+      kubeSchedulerUser: kube-scheduler
+

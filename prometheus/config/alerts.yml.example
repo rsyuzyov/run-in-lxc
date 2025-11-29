@@ -1,0 +1,342 @@
+# Alerting Rules Example
+# Расширенный набор правил алертинга
+
+groups:
+  #############################################
+  # Алерты доступности
+  #############################################
+  - name: availability
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} down"
+          description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes."
+          runbook_url: "https://wiki.example.com/runbooks/instance-down"
+
+      - alert: TargetMissing
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Target {{ $labels.instance }} is missing"
+          description: "A Prometheus target has disappeared. An exporter might be crashed."
+
+  #############################################
+  # Алерты CPU
+  #############################################
+  - name: cpu
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ printf \"%.1f\" $value }}% on {{ $labels.instance }}"
+
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ printf \"%.1f\" $value }}% on {{ $labels.instance }}"
+
+      - alert: HighCPUIOwait
+        expr: avg by(instance) (rate(node_cpu_seconds_total{mode="iowait"}[5m])) * 100 > 10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU iowait on {{ $labels.instance }}"
+          description: "CPU iowait is {{ printf \"%.1f\" $value }}%, indicating disk I/O bottleneck"
+
+  #############################################
+  # Алерты памяти
+  #############################################
+  - name: memory
+    rules:
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ printf \"%.1f\" $value }}% on {{ $labels.instance }}"
+
+      - alert: CriticalMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ printf \"%.1f\" $value }}% on {{ $labels.instance }}"
+
+      - alert: HighSwapUsage
+        expr: (1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes)) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High swap usage on {{ $labels.instance }}"
+          description: "Swap usage is {{ printf \"%.1f\" $value }}%"
+
+      - alert: OutOfMemory
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host out of memory on {{ $labels.instance }}"
+          description: "Node memory is filling up (< 5% left)"
+
+  #############################################
+  # Алерты диска
+  #############################################
+  - name: disk
+    rules:
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) * 100 < 20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk space is {{ printf \"%.1f\" $value }}% available on {{ $labels.mountpoint }}"
+
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk space on {{ $labels.instance }}"
+          description: "Disk space is {{ printf \"%.1f\" $value }}% available on {{ $labels.mountpoint }}"
+
+      - alert: DiskWillFillIn24Hours
+        expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}[6h], 24*3600) < 0
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk will fill in 24 hours on {{ $labels.instance }}"
+          description: "Filesystem {{ $labels.mountpoint }} is predicted to run out of space within 24 hours"
+
+      - alert: HighDiskReadLatency
+        expr: rate(node_disk_read_time_seconds_total[5m]) / rate(node_disk_reads_completed_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk read latency on {{ $labels.instance }}"
+          description: "Disk read latency is {{ printf \"%.3f\" $value }}s"
+
+      - alert: HighDiskWriteLatency
+        expr: rate(node_disk_write_time_seconds_total[5m]) / rate(node_disk_writes_completed_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk write latency on {{ $labels.instance }}"
+          description: "Disk write latency is {{ printf \"%.3f\" $value }}s"
+
+  #############################################
+  # Алерты сети
+  #############################################
+  - name: network
+    rules:
+      - alert: HighNetworkReceiveErrors
+        expr: rate(node_network_receive_errs_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Network receive errors on {{ $labels.instance }}"
+          description: "{{ $labels.device }} has receive errors"
+
+      - alert: HighNetworkTransmitErrors
+        expr: rate(node_network_transmit_errs_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Network transmit errors on {{ $labels.instance }}"
+          description: "{{ $labels.device }} has transmit errors"
+
+      - alert: HighBandwidthUsage
+        expr: rate(node_network_receive_bytes_total{device!~"lo|veth.*|docker.*"}[5m]) / 1024 / 1024 > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High network bandwidth on {{ $labels.instance }}"
+          description: "Network receive rate is {{ printf \"%.1f\" $value }} MB/s on {{ $labels.device }}"
+
+  #############################################
+  # Blackbox (HTTP/ICMP) алерты
+  #############################################
+  - name: blackbox
+    rules:
+      - alert: EndpointDown
+        expr: probe_success == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Endpoint {{ $labels.instance }} is down"
+          description: "{{ $labels.instance }} has been unreachable for more than 2 minutes"
+
+      - alert: EndpointSlowResponse
+        expr: probe_duration_seconds > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow response from {{ $labels.instance }}"
+          description: "Response time is {{ printf \"%.2f\" $value }}s"
+
+      - alert: SSLCertExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon on {{ $labels.instance }}"
+          description: "SSL certificate will expire in {{ printf \"%.0f\" (($value) / 86400) }} days"
+
+      - alert: SSLCertExpiryCritical
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: "SSL certificate expiring very soon on {{ $labels.instance }}"
+          description: "SSL certificate will expire in {{ printf \"%.0f\" (($value) / 86400) }} days"
+
+      - alert: SSLCertExpired
+        expr: probe_ssl_earliest_cert_expiry - time() < 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SSL certificate expired on {{ $labels.instance }}"
+          description: "SSL certificate has expired!"
+
+      - alert: HTTPStatusError
+        expr: probe_http_status_code >= 400
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HTTP error on {{ $labels.instance }}"
+          description: "HTTP status code is {{ $value }}"
+
+  #############################################
+  # PostgreSQL алерты
+  #############################################
+  - name: postgresql
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down on {{ $labels.instance }}"
+          description: "PostgreSQL instance is unreachable"
+
+      - alert: PostgreSQLHighConnections
+        expr: pg_stat_activity_count / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High PostgreSQL connections on {{ $labels.instance }}"
+          description: "Connection usage is {{ printf \"%.1f\" $value }}%"
+
+      - alert: PostgreSQLDeadLocks
+        expr: rate(pg_stat_database_deadlocks[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL deadlocks on {{ $labels.instance }}"
+          description: "PostgreSQL has detected deadlocks"
+
+      - alert: PostgreSQLSlowQueries
+        expr: pg_stat_activity_max_tx_duration > 300
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow PostgreSQL queries on {{ $labels.instance }}"
+          description: "Queries running longer than 5 minutes"
+
+      - alert: PostgreSQLReplicationLag
+        expr: pg_replication_lag > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL replication lag on {{ $labels.instance }}"
+          description: "Replication lag is {{ printf \"%.0f\" $value }} seconds"
+
+  #############################################
+  # Prometheus self-monitoring
+  #############################################
+  - name: prometheus
+    rules:
+      - alert: PrometheusConfigReloadFailed
+        expr: prometheus_config_last_reload_successful == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus config reload failed"
+          description: "Reloading Prometheus configuration has failed"
+
+      - alert: PrometheusNotConnectedToAlertmanager
+        expr: prometheus_notifications_alertmanagers_discovered < 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus not connected to Alertmanager"
+          description: "Prometheus cannot reach any Alertmanager"
+
+      - alert: PrometheusRuleEvaluationFailures
+        expr: increase(prometheus_rule_evaluation_failures_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus rule evaluation failures"
+          description: "Prometheus encountered {{ $value }} rule evaluation failures"
+
+      - alert: PrometheusTargetScrapesDuplicate
+        expr: increase(prometheus_target_scrapes_sample_duplicate_timestamp_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus duplicate timestamps"
+          description: "Prometheus has {{ $value }} duplicate timestamps"
+
+      - alert: PrometheusTSDBCompactionsFailed
+        expr: increase(prometheus_tsdb_compactions_failed_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus TSDB compactions failed"
+          description: "Prometheus TSDB compactions are failing"
+

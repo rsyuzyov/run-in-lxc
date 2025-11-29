@@ -1,0 +1,97 @@
+# k0sctl Cluster Configuration Example
+# Использование: k0sctl apply -c k0sctl.yaml
+# Документация: https://github.com/k0sproject/k0sctl
+
+apiVersion: k0sctl.k0sproject.io/v1beta1
+kind: Cluster
+metadata:
+  name: my-k0s-cluster
+spec:
+  hosts:
+    # Controller + Worker (single node или первый узел)
+    - role: controller+worker
+      ssh:
+        address: 192.168.1.100
+        user: root
+        port: 22
+        keyPath: ~/.ssh/id_rsa
+      # Или использовать пароль
+      # ssh:
+      #   address: 192.168.1.100
+      #   user: root
+      #   password: "secret"
+      installFlags:
+        - --no-taints  # Разрешить workloads на controller
+
+    # Дополнительные controllers (для HA)
+    # - role: controller
+    #   ssh:
+    #     address: 192.168.1.101
+    #     user: root
+    #     keyPath: ~/.ssh/id_rsa
+
+    # - role: controller
+    #   ssh:
+    #     address: 192.168.1.102
+    #     user: root
+    #     keyPath: ~/.ssh/id_rsa
+
+    # Worker nodes
+    - role: worker
+      ssh:
+        address: 192.168.1.110
+        user: root
+        keyPath: ~/.ssh/id_rsa
+
+    - role: worker
+      ssh:
+        address: 192.168.1.111
+        user: root
+        keyPath: ~/.ssh/id_rsa
+
+  k0s:
+    # Версия k0s
+    version: "1.30.0+k0s.0"
+    # Динамическая конфигурация
+    dynamicConfig: false
+    # Конфигурация кластера
+    config:
+      apiVersion: k0s.k0sproject.io/v1beta1
+      kind: ClusterConfig
+      metadata:
+        name: my-cluster
+      spec:
+        api:
+          sans:
+            - k8s.example.com
+        network:
+          provider: kube-router
+          podCIDR: 10.244.0.0/16
+          serviceCIDR: 10.96.0.0/12
+        # Дополнительные настройки
+        # extensions:
+        #   helm:
+        #     charts:
+        #       - name: metallb
+        #         chartname: metallb/metallb
+        #         version: "0.14.8"
+        #         namespace: metallb-system
+
+# Команды k0sctl:
+#
+# Инициализация конфигурации:
+#   k0sctl init > k0sctl.yaml
+#
+# Развёртывание кластера:
+#   k0sctl apply -c k0sctl.yaml
+#
+# Получение kubeconfig:
+#   k0sctl kubeconfig -c k0sctl.yaml > kubeconfig
+#   export KUBECONFIG=./kubeconfig
+#
+# Резервное копирование:
+#   k0sctl backup -c k0sctl.yaml
+#
+# Сброс кластера:
+#   k0sctl reset -c k0sctl.yaml
+

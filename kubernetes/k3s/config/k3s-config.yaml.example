@@ -1,0 +1,61 @@
+# K3s Configuration Example
+# Путь: /etc/rancher/k3s/config.yaml
+# Документация: https://docs.k3s.io/installation/configuration
+
+# Режим записи kubeconfig
+write-kubeconfig-mode: "644"
+
+# Дополнительные SAN для TLS сертификата API
+tls-san:
+  - "k8s.example.com"
+  - "192.168.1.100"
+  - "10.0.0.100"
+
+# Отключение компонентов
+disable:
+  - traefik          # Отключить встроенный Traefik
+  - servicelb        # Отключить Klipper LoadBalancer
+  # - local-storage  # Отключить Local Path Provisioner
+  # - metrics-server # Отключить Metrics Server
+
+# Сетевые настройки
+flannel-backend: "vxlan"  # vxlan, host-gw, wireguard-native
+# cluster-cidr: "10.42.0.0/16"
+# service-cidr: "10.43.0.0/16"
+# cluster-dns: "10.43.0.10"
+
+# Настройки для HA кластера
+# cluster-init: true  # Включить встроенный etcd
+
+# Настройки etcd (для HA)
+# etcd-expose-metrics: true
+
+# Настройки kubelet
+# kubelet-arg:
+#   - "max-pods=110"
+#   - "eviction-hard=memory.available<500Mi"
+
+# Настройки kube-apiserver
+# kube-apiserver-arg:
+#   - "enable-admission-plugins=NodeRestriction"
+
+# Настройки containerd
+# private-registry: "/etc/rancher/k3s/registries.yaml"
+
+# Защита токена
+# token: "my-secure-token"
+
+# Путь к данным
+# data-dir: /var/lib/rancher/k3s
+
+# Bind address
+# bind-address: 0.0.0.0
+
+# Advertise address (для multi-homed hosts)
+# advertise-address: 192.168.1.100
+# node-ip: 192.168.1.100
+
+# Agent only
+# server: https://192.168.1.100:6443
+# token: xxxxx
+

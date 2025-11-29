@@ -1,0 +1,126 @@
+# PostgreSQL StatefulSet с Persistent Volume
+# Требует: StorageClass (Longhorn, local-path, etc.)
+# Применение: kubectl apply -f postgres-statefulset.yaml
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: database
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: database
+type: Opaque
+stringData:
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "SecurePassword123"
+  POSTGRES_DB: "appdb"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: database
+data:
+  # Базовые настройки PostgreSQL
+  PGDATA: "/var/lib/postgresql/data/pgdata"
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: database
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+              name: postgres
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+            - configMapRef:
+                name: postgres-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 5
+            periodSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        # Укажите StorageClass или используйте default
+        # storageClassName: longhorn
+        resources:
+          requests:
+            storage: 10Gi
+
+---
+# Headless Service для StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: database
+spec:
+  clusterIP: None
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+---
+# ClusterIP Service для доступа из приложений
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-svc
+  namespace: database
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
