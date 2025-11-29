@@ -1,0 +1,88 @@
+# ZoneMinder ML Object Detection Configuration
+# Настройки детекции объектов для zmeventnotification
+
+[ml]
+# Использовать хуки ML
+use_hooks=yes
+
+# Внешний ML gateway (пустой = локально)
+ml_gateway=
+
+# Использовать локальную обработку если gateway недоступен
+ml_fallback_local=yes
+
+# Режим обработки: parallel, serial
+ml_sequence=object,face
+
+# Таймаут обработки (секунды)
+ml_timeout=60
+
+[object]
+# === Основные настройки ===
+use_object_detection=yes
+
+# Тип модели: yolov4, yolov4-tiny, yolov3
+object_detection_type=yolov4
+
+# Фреймворк: opencv, coral (для TPU)
+object_framework=opencv
+
+# Процессор: cpu, gpu, tpu
+object_processor=cpu
+
+# === Пути к файлам модели ===
+object_config=/var/lib/zmeventnotification/models/yolov4/yolov4.cfg
+object_weights=/var/lib/zmeventnotification/models/yolov4/yolov4.weights
+object_labels=/var/lib/zmeventnotification/models/yolov4/coco.names
+
+# === Параметры детекции ===
+# Минимальная уверенность (0.0 - 1.0)
+object_min_confidence=0.5
+
+# Порог NMS (non-max suppression)
+object_nms_threshold=0.4
+
+# Какие объекты детектировать (regex)
+object_detection_pattern=(person|car|truck|bus|motorbike|bicycle|dog|cat)
+
+# Объекты которые НЕ детектировать
+#object_detection_ignore_pattern=(bird|bench)
+
+# === Производительность ===
+# Размер входного изображения (меньше = быстрее, но менее точно)
+# Рекомендуется: 416 или 608
+object_model_width=416
+object_model_height=416
+
+# Максимальное количество объектов
+object_max_detection=50
+
+[face]
+# === Распознавание лиц ===
+use_face_detection=no
+
+# Модель: dlib, face_recognition
+#face_detection_model=hog
+
+# Путь к известным лицам
+#face_known_faces_path=/var/lib/zmeventnotification/known_faces
+
+# Порог распознавания (меньше = строже)
+#face_recognition_threshold=0.6
+
+# Джиттер для улучшения распознавания
+#face_num_jitters=1
+
+[alpr]
+# === Распознавание номеров (ALPR) ===
+use_alpr=no
+
+# Платформа: openalpr, plate_recognizer
+#alpr_service=plate_recognizer
+
+# API ключ (для plate_recognizer)
+#alpr_api_key=YOUR_API_KEY
+
+# Регион номеров
+#alpr_regions=ru,eu
+

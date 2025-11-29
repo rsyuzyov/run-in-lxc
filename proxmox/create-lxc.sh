@@ -35,6 +35,10 @@ CT_START="0"
 CT_BOOTSTRAP="0"
 DRY_RUN="0"
 
+# GPU passthrough
+CT_GPU=""
+CT_GPU_DEVICE="/dev/dri"
+
 # Функции для вывода
 print_info() {
     echo -e "${GREEN}[INFO]${NC} $1"
@@ -86,6 +90,11 @@ show_help() {
   --bootstrap             Выполнить базовую настройку (обновление, локали, ssh)
   --dry-run               Показать команды без выполнения
   --help                  Показать эту справку
+  
+GPU Passthrough:
+  --gpu TYPE              Тип GPU для проброса: intel, nvidia, amd
+                          Автоматически добавляет конфигурацию LXC для GPU
+                          Для nvidia требуется настройка драйверов на хосте
 
 Примеры:
   # Минимальная команда
@@ -98,6 +107,10 @@ show_help() {
   $0 --name forgejo --cores 4 --memory 4096 --disk 20 \\
      --ip 192.168.1.100/24 --gateway 192.168.1.1 \\
      --ssh-key ~/.ssh/id_rsa.pub --start
+
+  # С GPU для видеонаблюдения (Shinobi)
+  $0 --name shinobi --cores 4 --memory 8192 --disk 40 \\
+     --gpu intel --start --bootstrap
 
 EOF
     exit 0
@@ -182,6 +195,10 @@ while [[ $# -gt 0 ]]; do
         --dry-run)
             DRY_RUN="1"
             shift
+            ;;
+        --gpu)
+            CT_GPU="$2"
+            shift 2
             ;;
         --help)
             show_help
@@ -388,6 +405,7 @@ echo "  Непривилег.:     $CT_UNPRIVILEGED"
 echo "  Возможности:     $CT_FEATURES"
 echo "  Пароль root:     $CT_PASSWORD"
 [ -n "$CT_SSH_KEY" ] && echo "  SSH ключ:        $CT_SSH_KEY"
+[ -n "$CT_GPU" ] && echo "  GPU:             $CT_GPU"
 echo ""
 
 if [ "$DRY_RUN" -eq 1 ]; then
@@ -414,6 +432,51 @@ if [ $? -eq 0 ]; then
 else
     print_error "Ошибка при создании контейнера!"
     exit 1
+fi
+
+# Настройка GPU passthrough
+if [ -n "$CT_GPU" ]; then
+    print_info "Настройка GPU passthrough ($CT_GPU)..."
+    
+    LXC_CONF="/etc/pve/lxc/${CT_ID}.conf"
+    
+    case $CT_GPU in
+        intel|amd)
+            # Intel iGPU / AMD GPU через /dev/dri
+            cat >> "$LXC_CONF" << EOF
+
+# GPU Passthrough ($CT_GPU)
+lxc.cgroup2.devices.allow: c 226:* rwm
+lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
+EOF
+            print_info "✓ Добавлена конфигурация для $CT_GPU GPU (/dev/dri)"
+            ;;
+        nvidia)
+            # NVIDIA GPU - требует наличия устройств
+            cat >> "$LXC_CONF" << EOF
+
+# GPU Passthrough (NVIDIA)
+lxc.cgroup2.devices.allow: c 195:* rwm
+lxc.cgroup2.devices.allow: c 236:* rwm
+lxc.cgroup2.devices.allow: c 226:* rwm
+EOF
+            # Проверяем и добавляем устройства NVIDIA если они существуют
+            for dev in /dev/nvidia0 /dev/nvidiactl /dev/nvidia-uvm /dev/nvidia-uvm-tools /dev/nvidia-modeset; do
+                if [ -e "$dev" ]; then
+                    echo "lxc.mount.entry: $dev ${dev#/} none bind,optional,create=file" >> "$LXC_CONF"
+                fi
+            done
+            # Также добавляем /dev/dri для некоторых случаев
+            if [ -d "/dev/dri" ]; then
+                echo "lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir" >> "$LXC_CONF"
+            fi
+            print_info "✓ Добавлена конфигурация для NVIDIA GPU"
+            print_warn "Убедитесь, что драйверы NVIDIA установлены на хосте!"
+            ;;
+        *)
+            print_warn "Неизвестный тип GPU: $CT_GPU. Поддерживаются: intel, nvidia, amd"
+            ;;
+    esac
 fi
 
 # Запуск контейнера если указано
@@ -461,12 +524,16 @@ CREDENTIALS_DIR="$SCRIPT_DIR/credentials"
 mkdir -p "$CREDENTIALS_DIR"
 CREDENTIALS_FILE="$CREDENTIALS_DIR/${CT_ID}_${CT_NAME}.txt"
 
+GPU_INFO=""
+[ -n "$CT_GPU" ] && GPU_INFO="GPU:             $CT_GPU"
+
 cat > "$CREDENTIALS_FILE" << EOF
 ID:              $CT_ID
 Имя:             $CT_NAME
 IP:              ${CT_IP:-$DHCP_IP (DHCP)}
 Пользователь:    root
 Пароль:          $CT_PASSWORD
+${GPU_INFO}
 Дата создания:   $(date)
 EOF
 

@@ -18,6 +18,9 @@
 *   **`1c/`** - сервер 1С:Предприятие 8
 *   **`postgres/`** - база данных PostgreSQL
 *   **`prometheus/`** - система мониторинга и алертинга (Prometheus + Node Exporter + Blackbox Exporter)
+*   **`motioneye/`** - веб-система видеонаблюдения MotionEye
+*   **`shinobi/`** - система видеонаблюдения Shinobi CE (NVR) с поддержкой GPU
+*   **`zoneminder/`** - система видеонаблюдения ZoneMinder (детекция движения, ML)
 
 ### Kubernetes (в LXC/VM)
 
@@ -227,7 +230,108 @@ sudo ./install.sh --postgres-exporter \
 
 Подробнее: [prometheus/README.md](prometheus/README.md)
 
-### 10. Пример: Установка Kubernetes (K3s)
+### 10. Пример: Установка MotionEye
+
+```bash
+cd run-in-lxc/motioneye
+
+# Базовая установка
+sudo ./install.sh
+
+# С часовым поясом и NFS-хранилищем
+sudo ./install.sh \
+  --timezone Europe/Moscow \
+  --nfs-mount 192.168.1.100:/recordings
+
+# Веб-интерфейс: http://<IP>:8765
+# Логин: admin, пароль: (пустой)
+```
+
+Рекомендуемые ресурсы LXC: 2 CPU, 2 GB RAM, 8 GB диска.
+
+Подробнее: [motioneye/README.md](motioneye/README.md)
+
+### 11. Пример: Установка Shinobi CE (видеонаблюдение)
+
+```bash
+cd run-in-lxc/shinobi
+
+# Минимальная установка (SQLite)
+sudo ./install.sh
+
+# С встроенным PostgreSQL
+sudo ./install.sh --with-postgres
+
+# С GPU ускорением (Intel VAAPI) и мониторингом
+sudo ./install.sh --with-postgres --gpu intel --prometheus
+
+# Полная production установка
+sudo ./install.sh \
+  --with-postgres \
+  --gpu intel \
+  --prometheus \
+  --storage-path /mnt/recordings \
+  --retention-days 60 \
+  --admin-email admin@example.com
+
+# С внешним PostgreSQL
+sudo ./install.sh \
+  --db-host 192.168.1.100 \
+  --db-name shinobi \
+  --db-user shinobi \
+  --db-password SecurePass123
+```
+
+После установки:
+- Супер-админ: `http://<IP>:8080/super`
+- Учётные данные: `/opt/shinobi/credentials/admin.txt`
+
+Рекомендуемые ресурсы LXC: 4 CPU, 8 GB RAM, 40 GB диска + отдельное хранилище для записей.
+
+Подробнее: [shinobi/README.md](shinobi/README.md)
+
+### 12. Пример: Установка ZoneMinder
+
+```bash
+cd run-in-lxc/zoneminder
+
+# Базовая установка
+sudo ./install.sh --domain cameras.example.com
+
+# С Let's Encrypt SSL
+sudo ./install.sh \
+  --domain cameras.example.com \
+  --email admin@example.com \
+  --letsencrypt
+
+# Полная установка с ML детекцией объектов
+sudo ./install.sh \
+  --domain cameras.example.com \
+  --email admin@example.com \
+  --letsencrypt \
+  --with-event-notification \
+  --with-ml \
+  --prometheus-exporter
+
+# С внешней БД
+sudo ./install.sh \
+  --domain cameras.example.com \
+  --db-host 192.168.1.100 \
+  --db-name zm \
+  --db-user zmuser \
+  --db-password SecurePass123
+```
+
+После установки:
+- Веб-интерфейс: `https://cameras.example.com/zm`
+- Логин: `admin`, пароль: `admin`
+- Учётные данные: `/root/zoneminder-credentials.txt`
+
+Рекомендуемые ресурсы LXC: 2+ CPU, 4+ GB RAM, 50+ GB диска.
+
+Подробнее: [zoneminder/README.md](zoneminder/README.md)
+
+### 13. Пример: Установка Kubernetes (K3s)
 
 ```bash
 # 1. На хосте Proxmox: создание LXC с настройками для K8s

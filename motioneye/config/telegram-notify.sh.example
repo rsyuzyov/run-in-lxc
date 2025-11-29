@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# Скрипт отправки уведомлений в Telegram при обнаружении движения
+#
+# Установка:
+# 1. Скопируйте в /usr/local/bin/telegram-notify.sh
+# 2. chmod +x /usr/local/bin/telegram-notify.sh
+# 3. Заполните BOT_TOKEN и CHAT_ID
+#
+# Использование в MotionEye:
+# Camera Settings → Motion Notifications → Run A Command:
+#   /usr/local/bin/telegram-notify.sh "%camera_name"
+#
+# Переменные MotionEye, доступные в команде:
+#   %camera_name - имя камеры
+#   %Y, %m, %d   - год, месяц, день
+#   %H, %M, %S   - часы, минуты, секунды
+#
+
+# ======================
+# НАСТРОЙКИ
+# ======================
+
+# Токен Telegram бота (получить у @BotFather)
+BOT_TOKEN="your_bot_token_here"
+
+# ID чата для отправки (узнать у @userinfobot)
+CHAT_ID="your_chat_id_here"
+
+# ======================
+# КОД
+# ======================
+
+CAMERA_NAME="${1:-Unknown Camera}"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+MESSAGE="🎥 *Обнаружено движение*
+📷 Камера: ${CAMERA_NAME}
+🕐 Время: ${TIMESTAMP}"
+
+# Отправка сообщения
+curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+    -d "chat_id=${CHAT_ID}" \
+    -d "text=${MESSAGE}" \
+    -d "parse_mode=Markdown" \
+    > /dev/null 2>&1
+
+exit 0
+

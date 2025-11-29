@@ -1,0 +1,10 @@
+# Пример конфигурации Prometheus для мониторинга Shinobi
+# Добавьте в /etc/prometheus/targets/shinobi.yml
+
+- targets:
+    - '192.168.1.50:9290'
+  labels:
+    job: 'shinobi'
+    env: 'production'
+    instance: 'nvr-main'
+

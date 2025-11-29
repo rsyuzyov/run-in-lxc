@@ -1,0 +1,48 @@
+{
+    "cpuUsageMarker": "CPU",
+    "cron": {
+        "enabled": true,
+        "port": 8082
+    },
+    "databaseType": "${DB_TYPE}",
+    "db": {
+        "host": "${DB_HOST}",
+        "port": ${DB_PORT},
+        "user": "${DB_USER}",
+        "password": "${DB_PASSWORD}",
+        "database": "${DB_NAME}"
+    },
+    "ip": "0.0.0.0",
+    "port": ${SHINOBI_PORT},
+    "passwordType": "sha256",
+    "passwordSalt": "",
+    "addStorage": [
+        {
+            "name": "recordings",
+            "path": "${STORAGE_PATH}"
+        }
+    ],
+    "videosDir": "${STORAGE_PATH}",
+    "retention": "${RETENTION_DAYS}d",
+    "subscriptionId": "",
+    "ssl": {
+        "enabled": false,
+        "key": "",
+        "cert": "",
+        "port": 443
+    },
+    "mail": {
+        "from": "",
+        "host": "",
+        "port": 25,
+        "secure": false,
+        "auth": {
+            "user": "",
+            "pass": ""
+        }
+    },
+    "customAutoLoad": "",
+    "language": "ru",
+    "region": "Europe/Moscow"
+}
+

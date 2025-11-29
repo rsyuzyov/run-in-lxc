@@ -1,0 +1,71 @@
+# ZoneMinder Event Notification Server Configuration
+# Полная документация: https://zmeventnotification.readthedocs.io/
+
+[general]
+# Путь к файлу с секретами
+secrets=/etc/zm/secrets.ini
+
+# Путь для хранения данных (изображения, модели и т.д.)
+base_data_path=/var/lib/zmeventnotification
+
+# Режим работы демона
+use_escontrol_interface=yes
+
+[network]
+# Порт WebSocket сервера
+port=9000
+
+# Привязка к интерфейсу (0.0.0.0 для всех)
+address=0.0.0.0
+
+[auth]
+# Включить аутентификацию
+enable=yes
+
+# Таймаут сессии (секунды)
+timeout=20
+
+# Использовать токены ZoneMinder API
+use_api_auth=yes
+
+[push]
+# Использовать API для push уведомлений
+use_api_push=yes
+
+# Задержка между уведомлениями (секунды)
+cooldown=30
+
+[fcm]
+# Firebase Cloud Messaging для мобильных приложений
+# Закомментируйте если не используете
+#fcm_api_key=YOUR_FCM_API_KEY
+
+[mqtt]
+# MQTT для интеграции с Home Assistant и т.д.
+enable=no
+server=127.0.0.1
+port=1883
+#username=mqtt_user
+#password=mqtt_pass
+topic=zoneminder
+
+# Формат сообщений: json или text
+mqtt_payload_format=json
+
+[ssl]
+# SSL для WebSocket сервера
+enable=no
+#cert=/etc/ssl/certs/zoneminder.crt
+#key=/etc/ssl/private/zoneminder.key
+
+[hooks]
+# Скрипты обработки событий
+hook_on_event_start=/var/lib/zmeventnotification/bin/zm_event_start.sh
+hook_on_event_end=/var/lib/zmeventnotification/bin/zm_event_end.sh
+
+# Какие события обрабатывать
+hook_pass_event_type=start,end
+
+# Пропускать события короче N секунд
+hook_skip_event_duration=0
+

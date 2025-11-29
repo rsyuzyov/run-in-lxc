@@ -1,0 +1,7 @@
+[
+    {
+        "mail": "${ADMIN_EMAIL}",
+        "pass": "${ADMIN_PASSWORD_HASH}"
+    }
+]
+

@@ -1,0 +1,79 @@
+# Prometheus scrape configuration for ZoneMinder
+# Добавьте этот блок в ваш prometheus.yml
+
+scrape_configs:
+  # ZoneMinder Exporter
+  - job_name: 'zoneminder'
+    static_configs:
+      - targets: ['192.168.1.50:9120']
+        labels:
+          instance: 'zoneminder-main'
+          environment: 'production'
+    
+    # Интервал сбора метрик
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    
+    # Метки для всех метрик
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+
+# Alerting rules for ZoneMinder
+# Сохраните в /etc/prometheus/rules/zoneminder.yml
+
+groups:
+  - name: zoneminder_alerts
+    rules:
+      # ZoneMinder недоступен
+      - alert: ZoneMinderDown
+        expr: zoneminder_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ZoneMinder is down"
+          description: "ZoneMinder has been down for more than 2 minutes"
+
+      # Монитор не работает
+      - alert: ZoneMinderMonitorDown
+        expr: zoneminder_monitor_status == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Monitor {{ $labels.monitor_name }} is down"
+          description: "Monitor {{ $labels.monitor_name }} has been inactive for 5 minutes"
+
+      # Нет событий за 24 часа (возможно камера не работает)
+      - alert: ZoneMinderNoEvents
+        expr: zoneminder_events_24h == 0
+        for: 24h
+        labels:
+          severity: warning
+        annotations:
+          summary: "No events from {{ $labels.monitor_name }}"
+          description: "Monitor {{ $labels.monitor_name }} has not recorded any events in 24 hours"
+
+      # Заканчивается место на диске
+      - alert: ZoneMinderStorageHigh
+        expr: zoneminder_storage_used_bytes / (50 * 1024 * 1024 * 1024) > 0.8
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "ZoneMinder storage is filling up"
+          description: "ZoneMinder storage usage is above 80%"
+
+      # Критический уровень хранилища
+      - alert: ZoneMinderStorageCritical
+        expr: zoneminder_storage_used_bytes / (50 * 1024 * 1024 * 1024) > 0.95
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ZoneMinder storage is almost full"
+          description: "ZoneMinder storage usage is above 95%"
+

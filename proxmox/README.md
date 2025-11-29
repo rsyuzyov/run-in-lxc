@@ -95,7 +95,55 @@ sudo ./create-lxc.sh --name test --dry-run
 | `--unprivileged` | Создать непривилегированный контейнер | true |
 | `--features` | Дополнительные возможности | nesting=1,keyctl=1 |
 | `--start` | Запустить контейнер после создания | false |
+| `--bootstrap` | Выполнить базовую настройку после создания | false |
+| `--gpu TYPE` | Проброс GPU: intel, nvidia, amd | не указан |
 | `--dry-run` | Показать команды без выполнения | false |
+
+## GPU Passthrough
+
+Скрипт поддерживает автоматический проброс GPU в контейнер для аппаратного ускорения (транскодирование видео, ML).
+
+### Поддерживаемые GPU
+
+| Тип | Описание | Что добавляется в LXC conf |
+|-----|----------|---------------------------|
+| `intel` | Intel iGPU (VAAPI) | /dev/dri |
+| `nvidia` | NVIDIA GPU | /dev/nvidia*, /dev/dri |
+| `amd` | AMD GPU | /dev/dri |
+
+### Примеры
+
+```bash
+# Контейнер для видеонаблюдения с Intel GPU
+sudo ./create-lxc.sh --name shinobi --cores 4 --memory 8192 --disk 40 \
+  --gpu intel --start --bootstrap
+
+# Контейнер для ML с NVIDIA GPU
+sudo ./create-lxc.sh --name ml-server --cores 8 --memory 16384 --disk 100 \
+  --gpu nvidia --start
+```
+
+### Проверка GPU в контейнере
+
+**Intel VAAPI:**
+```bash
+apt install vainfo
+vainfo
+# Должен показать доступные профили VA-API
+```
+
+**NVIDIA:**
+```bash
+nvidia-smi
+# Должен показать информацию о GPU
+```
+
+### Требования для NVIDIA
+
+Перед использованием `--gpu nvidia` убедитесь, что:
+1. Драйверы NVIDIA установлены на хосте Proxmox
+2. Устройства `/dev/nvidia*` существуют на хосте
+3. Версии драйверов в контейнере совпадают с версией на хосте
 
 ## После создания
 
