@@ -327,6 +327,32 @@ if [ "$SKIP_TEST" = false ]; then
     fi
 fi
 
+# Установка lazydocker
+print_info "Установка lazydocker..."
+if curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash; then
+    # Добавляем ~/.local/bin в PATH если его там нет
+    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+    
+    # Добавляем в /etc/profile.d для всех пользователей
+    if [ ! -f /etc/profile.d/lazydocker.sh ]; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' > /etc/profile.d/lazydocker.sh
+        chmod +x /etc/profile.d/lazydocker.sh
+    fi
+    
+    if command -v lazydocker &>/dev/null; then
+        LAZYDOCKER_VERSION=$(lazydocker --version 2>/dev/null | head -n1 || echo "установлен")
+        print_info "✓ lazydocker установлен: $LAZYDOCKER_VERSION"
+    else
+        print_info "✓ lazydocker установлен в ~/.local/bin"
+        print_warn "  Перезайдите в систему или выполните: export PATH=\"\$HOME/.local/bin:\$PATH\""
+    fi
+else
+    print_warn "Не удалось установить lazydocker"
+    print_warn "Можно установить вручную: https://github.com/jesseduffield/lazydocker#installation"
+fi
+
 # Версии
 DOCKER_VERSION=$(docker --version)
 COMPOSE_VERSION=$(docker compose version 2>/dev/null || echo "не установлен")
@@ -340,6 +366,9 @@ echo ""
 print_info "Версии:"
 echo "  Docker:         $DOCKER_VERSION"
 echo "  Docker Compose: $COMPOSE_VERSION"
+if [ -n "$LAZYDOCKER_VERSION" ]; then
+echo "  lazydocker:     $LAZYDOCKER_VERSION"
+fi
 echo ""
 
 if [ -n "$MIRROR" ]; then
@@ -357,6 +386,7 @@ echo "  docker ps                           # список контейнеро�
 echo "  docker images                       # список образов"
 echo "  docker compose up -d                # запуск из docker-compose.yml"
 echo "  systemctl status docker             # статус службы"
+echo "  lazydocker                          # TUI для управления Docker"
 echo ""
 print_info "Конфигурация: /etc/docker/daemon.json"
 echo ""
