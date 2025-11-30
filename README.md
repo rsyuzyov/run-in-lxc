@@ -21,6 +21,7 @@
 *   **`motioneye/`** - веб-система видеонаблюдения MotionEye
 *   **`shinobi/`** - система видеонаблюдения Shinobi CE (NVR) с поддержкой GPU
 *   **`zoneminder/`** - система видеонаблюдения ZoneMinder (детекция движения, ML)
+*   **`syncthing/`** - децентрализованная синхронизация файлов (P2P, без облака)
 
 ### Kubernetes (в LXC/VM)
 
@@ -381,6 +382,41 @@ cd run-in-lxc/kubernetes/common/addons
 Рекомендуемые ресурсы: 2+ CPU, 4+ GB RAM, 40+ GB диска.
 
 Подробнее: [kubernetes/README.md](kubernetes/README.md)
+
+### 14. Пример: Установка Syncthing
+
+```bash
+cd run-in-lxc/syncthing
+
+# Базовая установка с паролем
+sudo ./install.sh --gui-password "MySecurePassword"
+
+# Для слабого ПК (Raspberry Pi и т.п.)
+sudo ./install.sh \
+  --low-resources \
+  --max-recv-kbps 5000 \
+  --max-send-kbps 5000 \
+  --gui-password "MyPassword"
+
+# Корпоративный сервер с SSL и мониторингом
+sudo ./install.sh \
+  --gui-password "$(openssl rand -base64 16)" \
+  --prometheus \
+  --nginx --ssl \
+  --domain sync.company.local \
+  --email admin@company.local
+
+# Relay-сервер для NAT traversal
+sudo ./install.sh --relay
+```
+
+После установки:
+- Веб-интерфейс: `http://<IP>:8384`
+- Учётные данные: `/var/lib/syncthing/credentials/info.txt`
+
+Рекомендуемые ресурсы LXC: 1 CPU, 512 MB RAM (минимум), 8 GB диска.
+
+Подробнее: [syncthing/README.md](syncthing/README.md)
 
 ## Документация
 
