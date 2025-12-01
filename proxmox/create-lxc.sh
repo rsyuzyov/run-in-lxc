@@ -519,10 +519,12 @@ if [ "$CT_BOOTSTRAP" -eq 1 ] && [ "$CT_START" -eq 1 ]; then
 fi
 
 # Сохранение учетных данных в файл
+# Определяем корень проекта (скрипт находится в proxmox/)
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-CREDENTIALS_DIR="$SCRIPT_DIR/credentials"
-mkdir -p "$CREDENTIALS_DIR"
-CREDENTIALS_FILE="$CREDENTIALS_DIR/${CT_ID}_${CT_NAME}.txt"
+PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
+ACCOUNTS_DIR="$PROJECT_ROOT/.accounts/${CT_NAME}-${CT_ID}"
+mkdir -p "$ACCOUNTS_DIR"
+CREDENTIALS_FILE="$ACCOUNTS_DIR/host.txt"
 
 GPU_INFO=""
 [ -n "$CT_GPU" ] && GPU_INFO="GPU:             $CT_GPU"
@@ -543,7 +545,7 @@ chmod 600 "$CREDENTIALS_FILE"
 echo ""
 print_info "=== Контейнер готов к использованию ==="
 echo ""
-print_info "Учетные данные сохранены в: $CREDENTIALS_FILE"
+print_info "Учетные данные сохранены в: $ACCOUNTS_DIR/host.txt"
 echo ""
 print_info "Информация для подключения:"
 echo "  ID:              $CT_ID"

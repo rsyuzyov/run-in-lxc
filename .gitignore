@@ -8,8 +8,8 @@ Thumbs.db
 # Temp
 tmp/
 
-# Credentials
-proxmox/credentials/
+# Credentials (accounts per container)
+.accounts/
 
 # Foreman assets (large .deb files)
 foreman/assets/*.deb
