@@ -9,7 +9,7 @@
 cd proxmox && sudo ./create-lxc.sh --name my-container --bootstrap
 
 # 2. Установка приложения (в контейнере, на примере 1С)
-git clone <repo-url> run-in-lxc && cd run-in-lxc/apps/1c
+git clone https://github.com/rsyuzyov/run-in-lxc.git run-in-lxc && cd run-in-lxc/apps/1c
 sudo ./install.sh --version 8.3.25.1257 --its-login user@example.com --its-password YourPassword
 ```
 
