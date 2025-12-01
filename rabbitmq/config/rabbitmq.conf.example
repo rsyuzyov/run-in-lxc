@@ -1,0 +1,30 @@
+# ===========================================
+# RabbitMQ Basic Configuration
+# ===========================================
+# Базовая конфигурация для одиночного сервера
+
+# Сетевые настройки
+listeners.tcp.default = 5672
+
+# Management UI
+management.tcp.port = 15672
+management.tcp.ip = 0.0.0.0
+
+# Лимиты ресурсов
+disk_free_limit.absolute = 1GB
+vm_memory_high_watermark.relative = 0.4
+
+# Каналы
+channel_max = 2047
+
+# Логирование
+log.file.level = info
+log.console = false
+log.console.level = info
+
+# Heartbeat (в секундах)
+heartbeat = 60
+
+# Collect statistics interval (в миллисекундах)
+collect_statistics_interval = 5000
+

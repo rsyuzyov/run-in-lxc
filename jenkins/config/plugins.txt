@@ -1,0 +1,166 @@
+# Jenkins Plugins List
+# Файл для использования с --plugins опцией
+# Формат: один плагин на строку, можно указать версию через :
+# Например: git:5.2.0
+
+#######################################
+# Основные плагины
+#######################################
+
+# Git интеграция
+git
+git-client
+git-server
+
+# Pipeline (CI/CD)
+workflow-aggregator
+pipeline-stage-view
+pipeline-graph-view
+pipeline-milestone-step
+pipeline-build-step
+pipeline-input-step
+
+# Blue Ocean (современный UI)
+blueocean
+
+#######################################
+# Docker
+#######################################
+
+docker-workflow
+docker-plugin
+docker-commons
+
+#######################################
+# Kubernetes
+#######################################
+
+kubernetes
+kubernetes-cli
+kubernetes-credentials
+
+#######################################
+# Git хостинги
+#######################################
+
+# GitLab
+gitlab-plugin
+gitlab-api
+gitlab-branch-source
+
+# GitHub
+github
+github-api
+github-branch-source
+
+# Gitea / Forgejo
+gitea
+
+#######################################
+# Credentials и безопасность
+#######################################
+
+credentials
+credentials-binding
+ssh-credentials
+plain-credentials
+ssh-agent
+
+#######################################
+# Утилиты сборки
+#######################################
+
+timestamper
+ws-cleanup
+build-timeout
+throttle-concurrents
+rebuild
+build-name-setter
+
+# Параметризованные сборки
+extended-choice-parameter
+file-parameters
+validating-string-parameter
+
+#######################################
+# Уведомления
+#######################################
+
+# Email
+email-ext
+mailer
+
+# Slack (раскомментируйте при необходимости)
+# slack
+
+# Telegram (раскомментируйте при необходимости)
+# telegram-notifications
+
+#######################################
+# UI и отчёты
+#######################################
+
+dark-theme
+locale
+ansicolor
+antisamy-markup-formatter
+
+# Отчёты о тестах
+junit
+test-results-analyzer
+
+# Покрытие кода
+jacoco
+cobertura
+
+#######################################
+# Configuration as Code
+#######################################
+
+configuration-as-code
+job-dsl
+
+#######################################
+# Мониторинг
+#######################################
+
+# Prometheus (метрики)
+prometheus
+
+# Monitoring
+monitoring
+
+#######################################
+# Дополнительные инструменты
+#######################################
+
+# Maven
+maven-plugin
+
+# Gradle
+gradle
+
+# NodeJS
+nodejs
+
+# SonarQube
+sonar
+
+# Artifactory / Nexus
+# artifactory
+# nexus-artifact-uploader
+
+#######################################
+# Безопасность
+#######################################
+
+# LDAP
+# ldap
+
+# Active Directory
+# active-directory
+
+# Role-based access
+role-strategy
+authorize-project
+

@@ -1,0 +1,30 @@
+{
+  "name": "jdbc-source-connector",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": "1",
+    
+    "connection.url": "jdbc:postgresql://localhost:5432/mydb",
+    "connection.user": "kafka_connect",
+    "connection.password": "password",
+    
+    "table.whitelist": "users,orders",
+    "mode": "incrementing",
+    "incrementing.column.name": "id",
+    
+    "topic.prefix": "db-",
+    "poll.interval.ms": "5000",
+    
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "true",
+    
+    "transforms": "createKey,extractInt",
+    "transforms.createKey.type": "org.apache.kafka.connect.transforms.ValueToKey",
+    "transforms.createKey.fields": "id",
+    "transforms.extractInt.type": "org.apache.kafka.connect.transforms.ExtractField$Key",
+    "transforms.extractInt.field": "id"
+  }
+}
+

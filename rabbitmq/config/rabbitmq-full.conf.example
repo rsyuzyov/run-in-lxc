@@ -1,0 +1,102 @@
+# ===========================================
+# RabbitMQ Full Configuration
+# ===========================================
+# Полная конфигурация со всеми протоколами
+
+# ===========================================
+# Сетевые настройки
+# ===========================================
+listeners.tcp.default = 5672
+
+# ===========================================
+# Management UI
+# ===========================================
+management.tcp.port = 15672
+management.tcp.ip = 0.0.0.0
+
+# CORS (для внешних клиентов)
+# management.cors.allow_origins.1 = https://example.com
+
+# ===========================================
+# Prometheus метрики
+# ===========================================
+prometheus.tcp.port = 15692
+prometheus.return_per_object_metrics = true
+
+# ===========================================
+# MQTT
+# ===========================================
+mqtt.listeners.tcp.default = 1883
+mqtt.allow_anonymous = false
+mqtt.default_user = mqtt_user
+mqtt.default_pass = mqtt_password
+mqtt.vhost = /
+mqtt.exchange = amq.topic
+mqtt.prefetch = 10
+
+# MQTT с TLS
+# mqtt.listeners.ssl.default = 8883
+# mqtt.listeners.ssl.certfile = /etc/rabbitmq/ssl/server.crt
+# mqtt.listeners.ssl.keyfile = /etc/rabbitmq/ssl/server.key
+
+# ===========================================
+# STOMP
+# ===========================================
+stomp.listeners.tcp.default = 61613
+
+# STOMP с TLS
+# stomp.listeners.ssl.default = 61614
+# stomp.ssl_options.certfile = /etc/rabbitmq/ssl/server.crt
+# stomp.ssl_options.keyfile = /etc/rabbitmq/ssl/server.key
+
+# Web STOMP (WebSocket)
+# web_stomp.tcp.port = 15674
+
+# ===========================================
+# Лимиты ресурсов
+# ===========================================
+disk_free_limit.absolute = 2GB
+vm_memory_high_watermark.relative = 0.5
+
+# Paging threshold (когда начинать выгружать на диск)
+vm_memory_high_watermark_paging_ratio = 0.75
+
+# Каналы и соединения
+channel_max = 4096
+# connection_max = 10000
+
+# ===========================================
+# Очереди
+# ===========================================
+# Тип очередей по умолчанию (classic или quorum)
+# default_queue_type = quorum
+
+# Consumer timeout (миллисекунды)
+# consumer_timeout = 1800000
+
+# ===========================================
+# Логирование
+# ===========================================
+log.file.level = info
+log.file.rotation.date = $D0
+log.file.rotation.count = 7
+log.console = false
+
+# ===========================================
+# Heartbeat и таймауты
+# ===========================================
+heartbeat = 60
+handshake_timeout = 10000
+
+# ===========================================
+# Background GC
+# ===========================================
+background_gc_enabled = true
+background_gc_target_interval = 60000
+
+# ===========================================
+# Statistics
+# ===========================================
+collect_statistics = fine
+collect_statistics_interval = 5000
+

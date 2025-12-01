@@ -1,0 +1,113 @@
+# Apache Kafka Configuration (KRaft Mode - Cluster)
+# Пример для multi-node кластера из 3 нод
+# Документация: https://kafka.apache.org/documentation/#configuration
+
+#############################################
+# Server Basics
+#############################################
+
+# Node ID (уникальный в кластере: 1, 2, 3)
+# Укажите соответствующий ID для каждой ноды
+node.id=1
+
+# Роли процесса
+# В небольших кластерах все ноды могут быть broker+controller
+# В больших кластерах можно разделить роли
+process.roles=broker,controller
+
+# Кворум контроллеров (все ноды с ролью controller)
+# ВАЖНО: должен быть одинаковым на всех нодах
+controller.quorum.voters=1@kafka1.local:9093,2@kafka2.local:9093,3@kafka3.local:9093
+
+#############################################
+# Listeners
+#############################################
+
+# Внутренние listeners
+listeners=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+
+# Внешние listeners (укажите реальный hostname/IP ноды)
+# Нода 1: advertised.listeners=PLAINTEXT://kafka1.local:9092
+# Нода 2: advertised.listeners=PLAINTEXT://kafka2.local:9092
+# Нода 3: advertised.listeners=PLAINTEXT://kafka3.local:9092
+advertised.listeners=PLAINTEXT://kafka1.local:9092
+
+controller.listener.names=CONTROLLER
+listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL
+inter.broker.listener.name=PLAINTEXT
+
+#############################################
+# Log Directories
+#############################################
+
+log.dirs=/var/lib/kafka/kraft-combined-logs
+
+#############################################
+# Topic Defaults (для кластера)
+#############################################
+
+# Количество партиций по умолчанию
+num.partitions=6
+
+# Фактор репликации (рекомендуется 3 для кластера)
+default.replication.factor=3
+
+# Минимум синхронизированных реплик (n/2 + 1)
+min.insync.replicas=2
+
+# Автоматическое создание топиков
+auto.create.topics.enable=true
+
+# Автоматическая перебалансировка лидеров
+auto.leader.rebalance.enable=true
+
+#############################################
+# Log Retention
+#############################################
+
+log.retention.hours=168
+log.retention.bytes=-1
+log.segment.bytes=1073741824
+log.cleanup.policy=delete
+log.retention.check.interval.ms=300000
+
+#############################################
+# Performance Tuning
+#############################################
+
+num.network.threads=8
+num.io.threads=16
+socket.send.buffer.bytes=1048576
+socket.receive.buffer.bytes=1048576
+socket.request.max.bytes=104857600
+num.recovery.threads.per.data.dir=2
+
+# Replica fetching
+num.replica.fetchers=4
+replica.fetch.min.bytes=1
+replica.fetch.max.bytes=1048576
+
+#############################################
+# Group Coordinator (для кластера)
+#############################################
+
+offsets.topic.replication.factor=3
+transaction.state.log.replication.factor=3
+transaction.state.log.min.isr=2
+
+#############################################
+# Controller Settings
+#############################################
+
+# Интервал heartbeat контроллера
+# controller.quorum.election.timeout.ms=1000
+# controller.quorum.fetch.timeout.ms=2000
+
+#############################################
+# Unclean Leader Election
+#############################################
+
+# Запретить выбор несинхронизированной реплики лидером
+# (рекомендуется false для production)
+unclean.leader.election.enable=false
+

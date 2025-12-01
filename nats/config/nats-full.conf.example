@@ -1,0 +1,141 @@
+# NATS Server Full Configuration
+# Полная конфигурация со всеми возможностями
+
+server_name: nats-full
+
+# Сетевые настройки
+host: 0.0.0.0
+port: 4222
+http_port: 8222
+
+# Логирование
+log_file: /var/log/nats/nats-server.log
+logtime: true
+debug: false
+trace: false
+log_size_limit: 100MB
+
+# JetStream
+jetstream {
+    store_dir: /var/lib/nats-server/jetstream
+    max_mem: 4G
+    max_file: 100G
+    # domain: main
+}
+
+# TLS для клиентских соединений
+tls {
+    cert_file: /etc/nats/ssl/server.crt
+    key_file: /etc/nats/ssl/server.key
+    ca_file: /etc/nats/ssl/ca.crt
+    verify: true
+    timeout: 2s
+}
+
+# Кластер
+cluster {
+    name: production
+    port: 6222
+    
+    routes: [
+        nats://192.168.1.11:6222
+        nats://192.168.1.12:6222
+    ]
+    
+    tls {
+        cert_file: /etc/nats/ssl/server.crt
+        key_file: /etc/nats/ssl/server.key
+        ca_file: /etc/nats/ssl/ca.crt
+        verify: true
+    }
+}
+
+# Leaf Nodes
+leafnodes {
+    port: 7422
+    
+    tls {
+        cert_file: /etc/nats/ssl/server.crt
+        key_file: /etc/nats/ssl/server.key
+        ca_file: /etc/nats/ssl/ca.crt
+        verify: true
+    }
+}
+
+# WebSocket
+websocket {
+    port: 8080
+    
+    tls {
+        cert_file: /etc/nats/ssl/server.crt
+        key_file: /etc/nats/ssl/server.key
+    }
+}
+
+# MQTT
+mqtt {
+    port: 1883
+    
+    tls {
+        cert_file: /etc/nats/ssl/server.crt
+        key_file: /etc/nats/ssl/server.key
+    }
+}
+
+# Лимиты
+max_connections: 100000
+max_payload: 8MB
+max_pending: 64MB
+max_control_line: 4KB
+
+# Ping/Pong
+ping_interval: "2m"
+ping_max: 2
+
+# Таймауты
+write_deadline: "10s"
+
+# Аутентификация через аккаунты
+accounts {
+    # Системный аккаунт (для мониторинга)
+    $SYS {
+        users: [
+            { user: sys, password: SysPassword123 }
+        ]
+    }
+    
+    # Основной аккаунт приложений
+    APP {
+        jetstream: enabled
+        
+        users: [
+            { user: app_user, password: AppPassword123 }
+        ]
+        
+        # Лимиты для аккаунта
+        limits {
+            max_connections: 1000
+            max_payload: 1MB
+            max_subs: 10000
+        }
+        
+        # JetStream лимиты
+        jetstream {
+            max_mem: 1G
+            max_file: 10G
+            max_streams: 100
+            max_consumers: 1000
+        }
+    }
+    
+    # Аккаунт для leaf nodes
+    LEAF {
+        users: [
+            { user: leaf_user, password: LeafPassword123 }
+        ]
+    }
+}
+
+# Системный аккаунт по умолчанию
+system_account: $SYS
+

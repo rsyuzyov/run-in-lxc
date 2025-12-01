@@ -1,0 +1,40 @@
+# NATS Server Leaf Node Configuration
+# Конфигурация для leaf node (edge/spoke)
+
+server_name: leaf-edge-1
+
+# Клиентские соединения
+port: 4222
+http_port: 8222
+
+# Логирование
+log_file: /var/log/nats/nats-server.log
+logtime: true
+
+# JetStream (опционально, для локального кэширования)
+jetstream {
+    store_dir: /var/lib/nats-server/jetstream
+    max_mem: 512M
+    max_file: 5G
+}
+
+# Leaf Nodes
+leafnodes {
+    # Подключение к hub кластеру
+    remotes: [
+        {
+            url: "nats://hub.example.com:7422"
+            
+            # Учётные данные для подключения к hub
+            # credentials: /etc/nats/leaf.creds
+            
+            # Или простая аутентификация
+            # account: "leaf_account"
+        }
+    ]
+}
+
+# Лимиты
+max_connections: 10000
+max_payload: 1MB
+

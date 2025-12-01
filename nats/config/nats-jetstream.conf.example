@@ -1,0 +1,44 @@
+# NATS Server Configuration with JetStream
+# Конфигурация с персистентностью
+
+server_name: nats-jetstream
+
+# Сетевые настройки
+port: 4222
+http_port: 8222
+
+# Логирование
+log_file: /var/log/nats/nats-server.log
+logtime: true
+debug: false
+trace: false
+
+# JetStream
+jetstream {
+    # Директория хранения
+    store_dir: /var/lib/nats-server/jetstream
+    
+    # Лимит памяти для кэша
+    max_mem: 1G
+    
+    # Лимит файлового хранилища
+    max_file: 10G
+    
+    # Домен JetStream (для супер-кластеров)
+    # domain: hub
+}
+
+# Лимиты
+max_connections: 65536
+max_payload: 8MB
+
+# Аутентификация (раскомментируйте нужное)
+# authorization {
+#     token: "your-secret-token"
+# }
+
+# authorization {
+#     user: nats
+#     password: SecurePassword123
+# }
+

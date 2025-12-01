@@ -1,0 +1,59 @@
+# NATS Server Cluster Configuration
+# Конфигурация для кластера из 3 узлов
+#
+# Для каждого узла измените:
+# - server_name: nats-1, nats-2, nats-3
+# - cluster.routes: исключите свой IP
+
+server_name: nats-1
+
+# Клиентские соединения
+port: 4222
+http_port: 8222
+
+# Логирование
+log_file: /var/log/nats/nats-server.log
+logtime: true
+debug: false
+trace: false
+
+# JetStream с репликацией
+jetstream {
+    store_dir: /var/lib/nats-server/jetstream
+    max_mem: 2G
+    max_file: 50G
+}
+
+# Кластер
+cluster {
+    name: production
+    
+    # Порт для межсерверных соединений
+    port: 6222
+    
+    # Маршруты к другим узлам кластера
+    # ВАЖНО: Укажите IP-адреса других узлов, исключая текущий
+    routes: [
+        nats://192.168.1.11:6222
+        nats://192.168.1.12:6222
+    ]
+    
+    # TLS для кластера (рекомендуется для production)
+    # tls {
+    #     cert_file: /etc/nats/ssl/server.crt
+    #     key_file: /etc/nats/ssl/server.key
+    #     ca_file: /etc/nats/ssl/ca.crt
+    #     verify: true
+    # }
+}
+
+# Лимиты
+max_connections: 65536
+max_payload: 8MB
+
+# Аутентификация
+authorization {
+    user: cluster_user
+    password: ClusterSecurePassword123
+}
+

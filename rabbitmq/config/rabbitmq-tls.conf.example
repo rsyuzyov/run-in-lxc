@@ -1,0 +1,65 @@
+# ===========================================
+# RabbitMQ TLS Configuration
+# ===========================================
+# Конфигурация с TLS для production
+
+# Отключаем незащищённый AMQP (опционально)
+# listeners.tcp = none
+
+# Незащищённый порт (если нужен)
+listeners.tcp.default = 5672
+
+# TLS для AMQP
+listeners.ssl.default = 5671
+
+# TLS настройки
+ssl_options.cacertfile = /etc/rabbitmq/ssl/ca.crt
+ssl_options.certfile = /etc/rabbitmq/ssl/server.crt
+ssl_options.keyfile = /etc/rabbitmq/ssl/server.key
+
+# Верификация клиентов
+# verify_none - не проверять клиентские сертификаты
+# verify_peer - требовать клиентские сертификаты
+ssl_options.verify = verify_peer
+ssl_options.fail_if_no_peer_cert = true
+
+# TLS версии (рекомендуется только 1.2 и 1.3)
+ssl_options.versions.1 = tlsv1.3
+ssl_options.versions.2 = tlsv1.2
+
+# Cipher suites (современные и безопасные)
+ssl_options.ciphers.1 = TLS_AES_256_GCM_SHA384
+ssl_options.ciphers.2 = TLS_AES_128_GCM_SHA256
+ssl_options.ciphers.3 = TLS_CHACHA20_POLY1305_SHA256
+ssl_options.ciphers.4 = ECDHE-RSA-AES256-GCM-SHA384
+ssl_options.ciphers.5 = ECDHE-RSA-AES128-GCM-SHA256
+
+# ===========================================
+# Management UI с TLS
+# ===========================================
+management.tcp.port = 15672
+management.tcp.ip = 127.0.0.1
+
+# TLS для Management (опционально)
+# management.ssl.port = 15671
+# management.ssl.cacertfile = /etc/rabbitmq/ssl/ca.crt
+# management.ssl.certfile = /etc/rabbitmq/ssl/server.crt
+# management.ssl.keyfile = /etc/rabbitmq/ssl/server.key
+
+# ===========================================
+# Inter-node TLS (для кластера)
+# ===========================================
+# ssl_options.cacertfile = /etc/rabbitmq/ssl/ca.crt
+# ssl_options.certfile = /etc/rabbitmq/ssl/server.crt
+# ssl_options.keyfile = /etc/rabbitmq/ssl/server.key
+
+# ===========================================
+# Лимиты ресурсов
+# ===========================================
+disk_free_limit.absolute = 1GB
+vm_memory_high_watermark.relative = 0.4
+channel_max = 2047
+
+# Логирование
+log.file.level = info
+

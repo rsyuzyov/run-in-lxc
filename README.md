@@ -14,10 +14,16 @@
 *   **`forgejo/`** - легковесный git-сервис (форк Gitea)
 *   **`gitlab/`** - GitLab CE (Omnibus) — полноценный DevOps-сервис
 *   **`gitlab-runner/`** - агент для выполнения CI/CD задач GitLab
+*   **`jenkins/`** - Jenkins CI/CD сервер (контроллер + агенты, JCasC, интеграции)
 *   **`foreman/`** - управление жизненным циклом хостов
 *   **`1c/`** - сервер 1С:Предприятие 8
 *   **`postgres/`** - база данных PostgreSQL
+*   **`mariadb/`** - база данных MariaDB с поддержкой Galera Cluster
+*   **`mongodb/`** - база данных MongoDB (NoSQL, документо-ориентированная)
 *   **`prometheus/`** - система мониторинга и алертинга (Prometheus + Node Exporter + Blackbox Exporter)
+*   **`kafka/`** - Apache Kafka (брокер сообщений с KRaft/ZooKeeper, Schema Registry, Connect)
+*   **`nats/`** - NATS Server (высокопроизводительный брокер сообщений, JetStream, кластер)
+*   **`rabbitmq/`** - RabbitMQ (брокер сообщений AMQP, MQTT, STOMP, Management UI, кластер)
 *   **`motioneye/`** - веб-система видеонаблюдения MotionEye
 *   **`shinobi/`** - система видеонаблюдения Shinobi CE (NVR) с поддержкой GPU
 *   **`zoneminder/`** - система видеонаблюдения ZoneMinder (детекция движения, ML)
@@ -111,7 +117,52 @@ sudo ./install.sh \
 
 Подробнее: [gitlab-runner/README.md](gitlab-runner/README.md)
 
-### 5. Пример: Установка сервера 1С:Предприятие 8
+### 5. Пример: Установка Jenkins
+
+```bash
+cd run-in-lxc/jenkins
+
+# Базовая установка
+sudo ./install.sh
+
+# С Nginx и Let's Encrypt
+sudo ./install.sh \
+  --with-nginx \
+  --domain jenkins.example.com \
+  --letsencrypt \
+  --email admin@example.com
+
+# Полная установка с JCasC и плагинами
+sudo ./install.sh \
+  --with-nginx \
+  --domain jenkins.example.com \
+  --letsencrypt \
+  --email admin@example.com \
+  --jcasc \
+  --jcasc-file config/jenkins.yaml \
+  --plugins config/plugins.txt \
+  --prometheus
+
+# Установка агента (inbound)
+cd run-in-lxc/jenkins
+sudo ./install-agent.sh \
+  --url https://jenkins.example.com \
+  --name agent-01 \
+  --secret СЕКРЕТ_ИЗ_JENKINS \
+  --install-docker \
+  --labels "docker,linux"
+```
+
+После установки:
+- Веб-интерфейс: `http://<IP>:8080`
+- Initial Admin Password: `/var/lib/jenkins/secrets/initialAdminPassword`
+- Учётные данные: `/root/jenkins-credentials/admin.txt`
+
+Рекомендуемые ресурсы LXC: 4 CPU, 4 GB RAM, 20 GB диска.
+
+Подробнее: [jenkins/README.md](jenkins/README.md)
+
+### 7. Пример: Установка сервера 1С:Предприятие 8
 
 ```bash
 cd run-in-lxc/1c
@@ -135,7 +186,7 @@ sudo ./install.sh \
 
 Подробнее: [1c/README.md](1c/README.md)
 
-### 6. Пример: Установка Foreman
+### 8. Пример: Установка Foreman
 
 ```bash
 cd run-in-lxc/foreman
@@ -155,7 +206,7 @@ sudo ./install.sh \
 
 Подробнее: [foreman/README.md](foreman/README.md)
 
-### 7. Пример: Установка Apache
+### 9. Пример: Установка Apache
 
 ```bash
 cd run-in-lxc/apache
@@ -182,7 +233,7 @@ sudo ./install.sh \
 
 Подробнее: [apache/README.md](apache/README.md)
 
-### 8. Пример: Установка Docker
+### 10. Пример: Установка Docker
 
 ```bash
 cd run-in-lxc/docker
@@ -202,7 +253,7 @@ sudo ./install.sh --check
 
 Подробнее: [docker/README.md](docker/README.md)
 
-### 9. Пример: Установка Prometheus Stack
+### 11. Пример: Установка Prometheus Stack
 
 ```bash
 cd run-in-lxc/prometheus
@@ -231,7 +282,7 @@ sudo ./install.sh --postgres-exporter \
 
 Подробнее: [prometheus/README.md](prometheus/README.md)
 
-### 10. Пример: Установка MotionEye
+### 12. Пример: Установка MotionEye
 
 ```bash
 cd run-in-lxc/motioneye
@@ -252,7 +303,7 @@ sudo ./install.sh \
 
 Подробнее: [motioneye/README.md](motioneye/README.md)
 
-### 11. Пример: Установка Shinobi CE (видеонаблюдение)
+### 13. Пример: Установка Shinobi CE (видеонаблюдение)
 
 ```bash
 cd run-in-lxc/shinobi
@@ -291,7 +342,7 @@ sudo ./install.sh \
 
 Подробнее: [shinobi/README.md](shinobi/README.md)
 
-### 12. Пример: Установка ZoneMinder
+### 14. Пример: Установка ZoneMinder
 
 ```bash
 cd run-in-lxc/zoneminder
@@ -332,7 +383,7 @@ sudo ./install.sh \
 
 Подробнее: [zoneminder/README.md](zoneminder/README.md)
 
-### 13. Пример: Установка Kubernetes (K3s)
+### 15. Пример: Установка Kubernetes (K3s)
 
 ```bash
 # 1. На хосте Proxmox: создание LXC с настройками для K8s
@@ -383,7 +434,7 @@ cd run-in-lxc/kubernetes/common/addons
 
 Подробнее: [kubernetes/README.md](kubernetes/README.md)
 
-### 14. Пример: Установка Syncthing
+### 16. Пример: Установка Syncthing
 
 ```bash
 cd run-in-lxc/syncthing
@@ -417,6 +468,296 @@ sudo ./install.sh --relay
 Рекомендуемые ресурсы LXC: 1 CPU, 512 MB RAM (минимум), 8 GB диска.
 
 Подробнее: [syncthing/README.md](syncthing/README.md)
+
+### 17. Пример: Установка MongoDB
+
+```bash
+cd run-in-lxc/mongodb
+
+# Базовая установка (dev/test, без авторизации)
+sudo ./install.sh
+
+# С авторизацией (рекомендуется)
+sudo ./install.sh --auth --admin-password SecureAdminPass123
+
+# Полная установка с базой, пользователем и мониторингом
+sudo ./install.sh \
+  --auth --admin-password AdminPass123 \
+  --db-name myapp \
+  --db-user myapp \
+  --db-password AppPass123 \
+  --allow-remote \
+  --prometheus
+
+# Подготовка для Replica Set
+sudo ./install.sh \
+  --auth --admin-password AdminPass123 \
+  --replica-set rs0 \
+  --allow-remote
+```
+
+После установки:
+- Подключение: `mongosh -u root -p 'AdminPass123' --authenticationDatabase admin`
+- Учётные данные: `/root/mongodb-credentials/credentials.txt`
+
+Рекомендуемые ресурсы LXC: 2 CPU, 4 GB RAM, 20 GB диска.
+
+Подробнее: [mongodb/README.md](mongodb/README.md)
+
+### 18. Пример: Установка MariaDB
+
+```bash
+cd run-in-lxc/mariadb
+
+# Базовая установка
+sudo ./install.sh --root-password MySecurePass123
+
+# Для веб-приложений (WordPress, Drupal)
+sudo ./install.sh \
+  --profile web \
+  --root-password SecurePass \
+  --db-name wordpress \
+  --db-user wpuser \
+  --db-password WpPass123 \
+  --allow-remote
+
+# С мониторингом Prometheus
+sudo ./install.sh \
+  --profile web \
+  --root-password SecurePass \
+  --db-name myapp \
+  --db-user appuser \
+  --db-password AppPass123 \
+  --prometheus
+
+# Galera Cluster (первый узел)
+sudo ./install.sh --galera --bootstrap \
+  --cluster-name production \
+  --node-name node1 \
+  --node-address 192.168.1.10 \
+  --cluster-nodes 192.168.1.10,192.168.1.11,192.168.1.12 \
+  --root-password ClusterPass
+```
+
+Профили конфигурации:
+- `default` — базовая конфигурация
+- `web` — для веб-приложений (WordPress, CMS)
+- `analytics` — для аналитики и OLAP
+- `minimal` — минимальные ресурсы (dev/test)
+
+После установки:
+- Подключение: `mysql` (использует `/root/.my.cnf`)
+- Учётные данные: `/root/mariadb-credentials/`
+
+Рекомендуемые ресурсы LXC: 2 CPU, 2 GB RAM, 20 GB диска.
+
+Подробнее: [mariadb/README.md](mariadb/README.md)
+
+### 19. Пример: Установка Apache Kafka
+
+```bash
+cd run-in-lxc/kafka
+
+# Базовая установка (single-node, KRaft mode)
+sudo ./install.sh
+
+# С веб-интерфейсом
+sudo ./install.sh --with-ui
+
+# Полный стек (UI + Schema Registry + Connect + мониторинг)
+sudo ./install.sh \
+  --with-ui \
+  --with-schema-registry \
+  --with-connect \
+  --prometheus
+
+# С увеличенными ресурсами и хранилищем
+sudo ./install.sh \
+  --heap-size 4g \
+  --data-dir /mnt/kafka-data \
+  --retention-hours 336 \
+  --with-ui --with-schema-registry --prometheus
+
+# Кластер из 3 нод (запустить на каждой ноде)
+# Нода 1:
+sudo ./install.sh --mode cluster --node-id 1 \
+  --controller-quorum "1@kafka1:9093,2@kafka2:9093,3@kafka3:9093" \
+  --bootstrap-servers "kafka1:9092,kafka2:9092,kafka3:9092" \
+  --advertised-host kafka1
+
+# Нода 2 (использовать cluster-id с первой ноды):
+sudo ./install.sh --mode cluster --node-id 2 \
+  --cluster-id $(cat /etc/kafka/cluster-id) \
+  --controller-quorum "1@kafka1:9093,2@kafka2:9093,3@kafka3:9093" \
+  --bootstrap-servers "kafka1:9092,kafka2:9092,kafka3:9092" \
+  --advertised-host kafka2
+
+# С ZooKeeper (legacy mode)
+sudo ./install.sh --with-zookeeper
+```
+
+После установки:
+- Kafka: `localhost:9092`
+- Web UI: `http://<IP>:8080`
+- Schema Registry: `http://<IP>:8081`
+- Kafka Connect: `http://<IP>:8083`
+- Credentials: `/etc/kafka/credentials/info.txt`
+
+Полезные команды:
+```bash
+# Список топиков
+kafka-topics --list --bootstrap-server localhost:9092
+
+# Создание топика
+kafka-topics --create --topic my-topic --partitions 3 --bootstrap-server localhost:9092
+
+# Отправка сообщений
+echo "Hello Kafka" | kafka-console-producer --topic my-topic --bootstrap-server localhost:9092
+
+# Чтение сообщений
+kafka-console-consumer --topic my-topic --from-beginning --bootstrap-server localhost:9092
+```
+
+Рекомендуемые ресурсы LXC: 4 CPU, 8 GB RAM, 50+ GB SSD.
+
+Подробнее: [kafka/README.md](kafka/README.md)
+
+### 20. Пример: Установка NATS Server
+
+```bash
+cd run-in-lxc/nats
+
+# Базовая установка
+sudo ./install.sh
+
+# С JetStream (персистентность)
+sudo ./install.sh --jetstream
+
+# С JetStream и мониторингом
+sudo ./install.sh --jetstream --prometheus
+
+# С аутентификацией
+sudo ./install.sh --jetstream --auth-user nats --auth-password SecurePass123
+
+# С WebSocket и MQTT
+sudo ./install.sh --jetstream --websocket --mqtt --prometheus
+
+# Кластер из 3 узлов
+# Узел 1:
+sudo ./install.sh --jetstream --cluster --server-name nats-1 \
+  --routes "nats://192.168.1.11:6222,nats://192.168.1.12:6222" \
+  --prometheus
+
+# Узел 2:
+sudo ./install.sh --jetstream --cluster --server-name nats-2 \
+  --routes "nats://192.168.1.10:6222,nats://192.168.1.12:6222" \
+  --prometheus
+
+# С TLS
+sudo ./install.sh --jetstream --tls \
+  --tls-cert /etc/ssl/certs/nats.crt \
+  --tls-key /etc/ssl/private/nats.key
+
+# Leaf Node (подключение к hub)
+sudo ./install.sh --jetstream --leafnodes \
+  --leafnode-remotes "nats://hub.example.com:7422"
+```
+
+После установки:
+- Клиентский порт: `4222`
+- HTTP мониторинг: `http://<IP>:8222`
+- Prometheus метрики: `http://<IP>:8222/metrics`
+- Учётные данные: `/root/nats-credentials/info.txt`
+
+Полезные команды:
+```bash
+# Информация о сервере
+nats server info
+
+# Pub/Sub
+nats sub "orders.>"
+nats pub orders.new '{"id": 1}'
+
+# JetStream
+nats stream ls
+nats stream add ORDERS --subjects "orders.>" --storage file
+nats consumer ls ORDERS
+```
+
+Рекомендуемые ресурсы LXC: 1 CPU, 512 MB RAM (без JetStream), 2 CPU, 2 GB RAM (с JetStream).
+
+Подробнее: [nats/README.md](nats/README.md)
+
+### 21. Пример: Установка RabbitMQ
+
+```bash
+cd run-in-lxc/rabbitmq
+
+# Базовая установка
+sudo ./install.sh
+
+# С Prometheus мониторингом
+sudo ./install.sh --prometheus
+
+# С указанным паролем администратора
+sudo ./install.sh --admin-user admin --admin-password SecurePass123
+
+# С MQTT и STOMP протоколами
+sudo ./install.sh --mqtt --stomp --prometheus
+
+# С TLS
+sudo ./install.sh --tls \
+  --tls-cert /etc/ssl/certs/rabbitmq.crt \
+  --tls-key /etc/ssl/private/rabbitmq.key
+
+# Кластер из 3 узлов (одинаковый cookie на всех!)
+# Узел 1:
+sudo ./install.sh --cluster --cluster-name production \
+  --erlang-cookie "MYSECRETCOOKIE" \
+  --cluster-nodes "rabbit@rabbit1,rabbit@rabbit2,rabbit@rabbit3" \
+  --prometheus
+
+# Узел 2:
+sudo ./install.sh --cluster --cluster-name production \
+  --erlang-cookie "MYSECRETCOOKIE" \
+  --cluster-nodes "rabbit@rabbit1,rabbit@rabbit2,rabbit@rabbit3" \
+  --prometheus
+
+# С Nginx и Let's Encrypt
+sudo ./install.sh --prometheus \
+  --with-nginx --domain rabbitmq.example.com \
+  --letsencrypt --email admin@example.com
+```
+
+После установки:
+- Management UI: `http://<IP>:15672`
+- AMQP: `amqp://<IP>:5672`
+- Prometheus метрики: `http://<IP>:15692/metrics`
+- Учётные данные: `/root/rabbitmq-credentials/info.txt`
+
+Полезные команды:
+```bash
+# Статус сервера
+rabbitmqctl status
+
+# Список очередей
+rabbitmqctl list_queues name messages consumers
+
+# Список соединений
+rabbitmqctl list_connections
+
+# Статус кластера
+rabbitmqctl cluster_status
+
+# Добавить пользователя
+rabbitmqctl add_user myuser mypassword
+rabbitmqctl set_user_tags myuser administrator
+rabbitmqctl set_permissions -p / myuser ".*" ".*" ".*"
+```
+
+Рекомендуемые ресурсы LXC: 2 CPU, 2 GB RAM, 10 GB диска.
+
+Подробнее: [rabbitmq/README.md](rabbitmq/README.md)
 
 ## Документация
 

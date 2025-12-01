@@ -1,0 +1,60 @@
+# ===========================================
+# RabbitMQ Cluster Configuration
+# ===========================================
+# Конфигурация для узла кластера
+# Используйте одинаковый erlang cookie на всех узлах
+
+# Сетевые настройки
+listeners.tcp.default = 5672
+
+# Management UI
+management.tcp.port = 15672
+management.tcp.ip = 0.0.0.0
+
+# ===========================================
+# Кластер
+# ===========================================
+cluster_formation.peer_discovery_backend = classic_config
+cluster_name = production
+
+# Узлы кластера (измените на реальные имена хостов)
+cluster_formation.classic_config.nodes.1 = rabbit@rabbit1
+cluster_formation.classic_config.nodes.2 = rabbit@rabbit2
+cluster_formation.classic_config.nodes.3 = rabbit@rabbit3
+
+# Partition handling
+# autoheal - автоматическое восстановление (рекомендуется для большинства случаев)
+# pause_minority - остановка меньшинства (для критичных данных)
+cluster_partition_handling = autoheal
+
+# ===========================================
+# Prometheus метрики
+# ===========================================
+prometheus.tcp.port = 15692
+prometheus.return_per_object_metrics = true
+
+# ===========================================
+# Лимиты ресурсов
+# ===========================================
+disk_free_limit.absolute = 2GB
+vm_memory_high_watermark.relative = 0.5
+channel_max = 4096
+
+# Увеличенные лимиты для кластера
+# connection_max = 10000
+
+# ===========================================
+# Логирование
+# ===========================================
+log.file.level = info
+log.console = false
+
+# ===========================================
+# Queue настройки по умолчанию
+# ===========================================
+# Quorum queues для высокой доступности
+# default_queue_type = quorum
+
+# Heartbeat
+heartbeat = 60
+

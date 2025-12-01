@@ -1,0 +1,127 @@
+# Apache Kafka Configuration (KRaft Mode)
+# Пример для single-node установки
+# Документация: https://kafka.apache.org/documentation/#configuration
+
+#############################################
+# Server Basics
+#############################################
+
+# Node ID (уникальный в кластере)
+node.id=1
+
+# Роли процесса: broker, controller или оба
+process.roles=broker,controller
+
+# Кворум контроллеров
+# Формат: nodeId@host:port
+controller.quorum.voters=1@localhost:9093
+
+#############################################
+# Listeners
+#############################################
+
+# Внутренние listeners (на чём слушает Kafka)
+listeners=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+
+# Внешние listeners (как клиенты подключаются)
+advertised.listeners=PLAINTEXT://YOUR_HOST_IP:9092
+
+# Имя listener для контроллера
+controller.listener.names=CONTROLLER
+
+# Карта протоколов безопасности
+listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL
+
+# Listener для межброкерной коммуникации
+inter.broker.listener.name=PLAINTEXT
+
+#############################################
+# Log Directories
+#############################################
+
+# Директория данных Kafka
+log.dirs=/var/lib/kafka/kraft-combined-logs
+
+#############################################
+# Topic Defaults
+#############################################
+
+# Количество партиций по умолчанию
+num.partitions=3
+
+# Фактор репликации по умолчанию
+default.replication.factor=1
+
+# Минимум синхронизированных реплик
+min.insync.replicas=1
+
+# Автоматическое создание топиков
+auto.create.topics.enable=true
+
+#############################################
+# Log Retention
+#############################################
+
+# Время хранения сообщений (часы)
+log.retention.hours=168
+
+# Максимальный размер на партицию (-1 = без лимита)
+log.retention.bytes=-1
+
+# Размер сегмента лога
+log.segment.bytes=1073741824
+
+# Политика очистки (delete, compact, delete,compact)
+log.cleanup.policy=delete
+
+# Интервал проверки retention
+log.retention.check.interval.ms=300000
+
+#############################################
+# Performance Tuning
+#############################################
+
+# Потоки для сетевых операций
+num.network.threads=3
+
+# Потоки для I/O операций
+num.io.threads=8
+
+# Размеры буферов сокетов
+socket.send.buffer.bytes=102400
+socket.receive.buffer.bytes=102400
+socket.request.max.bytes=104857600
+
+# Потоки восстановления на директорию
+num.recovery.threads.per.data.dir=1
+
+#############################################
+# Group Coordinator
+#############################################
+
+# Репликация топика offsets
+offsets.topic.replication.factor=1
+
+# Репликация топика транзакций
+transaction.state.log.replication.factor=1
+
+# Min ISR для топика транзакций
+transaction.state.log.min.isr=1
+
+#############################################
+# Compression
+#############################################
+
+# Тип компрессии producer (none, gzip, snappy, lz4, zstd)
+# compression.type=producer
+
+#############################################
+# Quotas
+#############################################
+
+# Лимит producer bytes/sec на клиента
+# quota.producer.default=10485760
+
+# Лимит consumer bytes/sec на клиента
+# quota.consumer.default=10485760
+

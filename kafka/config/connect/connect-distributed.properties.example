@@ -1,0 +1,125 @@
+# Kafka Connect Distributed Configuration
+# Документация: https://kafka.apache.org/documentation/#connectconfigs
+
+#############################################
+# Kafka Cluster
+#############################################
+
+# Bootstrap servers
+bootstrap.servers=localhost:9092
+
+#############################################
+# Connect Cluster
+#############################################
+
+# Уникальный ID кластера Connect
+group.id=kafka-connect-cluster
+
+#############################################
+# Converters
+#############################################
+
+# Конвертер для ключей (JsonConverter, AvroConverter, StringConverter)
+key.converter=org.apache.kafka.connect.json.JsonConverter
+
+# Включить схемы в JSON
+key.converter.schemas.enable=true
+
+# Конвертер для значений
+value.converter=org.apache.kafka.connect.json.JsonConverter
+value.converter.schemas.enable=true
+
+# Для Avro (требуется Schema Registry):
+# key.converter=io.confluent.connect.avro.AvroConverter
+# key.converter.schema.registry.url=http://localhost:8081
+# value.converter=io.confluent.connect.avro.AvroConverter
+# value.converter.schema.registry.url=http://localhost:8081
+
+#############################################
+# Internal Topics
+#############################################
+
+# Топик для хранения offsets
+offset.storage.topic=connect-offsets
+offset.storage.replication.factor=1
+offset.storage.partitions=25
+
+# Топик для хранения конфигураций
+config.storage.topic=connect-configs
+config.storage.replication.factor=1
+
+# Топик для хранения статусов
+status.storage.topic=connect-status
+status.storage.replication.factor=1
+status.storage.partitions=5
+
+#############################################
+# Flush Settings
+#############################################
+
+# Интервал сброса offsets (миллисекунды)
+offset.flush.interval.ms=10000
+
+# Таймаут сброса offsets
+offset.flush.timeout.ms=5000
+
+#############################################
+# REST API
+#############################################
+
+# Порт REST API
+rest.port=8083
+
+# Внешний хост для REST API
+rest.advertised.host.name=localhost
+rest.advertised.port=8083
+
+# Разрешить CORS
+# rest.access.control.allow.origin=*
+# rest.access.control.allow.methods=GET,POST,PUT,DELETE,OPTIONS
+
+#############################################
+# Plugin Path
+#############################################
+
+# Путь к плагинам коннекторов
+plugin.path=/opt/kafka-connect/plugins
+
+#############################################
+# Producer/Consumer Overrides
+#############################################
+
+# Producer settings
+# producer.batch.size=16384
+# producer.linger.ms=0
+# producer.buffer.memory=33554432
+
+# Consumer settings
+# consumer.max.poll.records=500
+# consumer.auto.offset.reset=earliest
+
+#############################################
+# Error Handling
+#############################################
+
+# Поведение при ошибках (none, all, log)
+# errors.tolerance=none
+
+# Логирование ошибок
+# errors.log.enable=true
+# errors.log.include.messages=true
+
+# Dead letter queue
+# errors.deadletterqueue.topic.name=dlq-topic
+# errors.deadletterqueue.topic.replication.factor=1
+
+#############################################
+# Tasks
+#############################################
+
+# Максимум задач на коннектор
+# tasks.max=10
+
+# Ребалансировка задач
+# scheduled.rebalance.max.delay.ms=60000
+

@@ -1,0 +1,57 @@
+# NATS Server Hub Configuration
+# Конфигурация hub-сервера для приёма leaf nodes
+
+server_name: hub-1
+
+# Клиентские соединения
+port: 4222
+http_port: 8222
+
+# Логирование
+log_file: /var/log/nats/nats-server.log
+logtime: true
+
+# JetStream
+jetstream {
+    store_dir: /var/lib/nats-server/jetstream
+    max_mem: 4G
+    max_file: 100G
+    
+    # Домен для супер-кластера
+    domain: hub
+}
+
+# Кластер hub-серверов
+cluster {
+    name: hub-cluster
+    port: 6222
+    
+    routes: [
+        nats://192.168.1.11:6222
+        nats://192.168.1.12:6222
+    ]
+}
+
+# Leaf Nodes listener
+leafnodes {
+    port: 7422
+    
+    # TLS для leaf connections
+    # tls {
+    #     cert_file: /etc/nats/ssl/server.crt
+    #     key_file: /etc/nats/ssl/server.key
+    #     ca_file: /etc/nats/ssl/ca.crt
+    #     verify: true
+    # }
+    
+    # Авторизация для leaf nodes
+    # authorization {
+    #     user: leaf_user
+    #     password: LeafSecurePassword123
+    # }
+}
+
+# Лимиты
+max_connections: 100000
+max_payload: 8MB
+

@@ -1,0 +1,283 @@
+# Jenkins Configuration as Code (JCasC)
+# Пример конфигурации для автоматического развёртывания
+#
+# Документация: https://www.jenkins.io/projects/jcasc/
+# Схема: https://github.com/jenkinsci/configuration-as-code-plugin
+#
+# Использование:
+#   1. Скопируйте этот файл в /var/lib/jenkins/casc_configs/
+#   2. Установите переменную CASC_JENKINS_CONFIG=/var/lib/jenkins/casc_configs
+#   3. Перезапустите Jenkins
+
+jenkins:
+  # Системные настройки
+  systemMessage: |
+    Welcome to Jenkins!
+    Configured automatically via JCasC.
+  
+  # Количество executor'ов на контроллере
+  # Рекомендуется 0 для production (все сборки на агентах)
+  numExecutors: 2
+  
+  # Режим использования агентов
+  # NORMAL - использовать все агенты
+  # EXCLUSIVE - только агенты с совпадающими метками
+  mode: NORMAL
+  
+  # Повторные попытки checkout
+  scmCheckoutRetryCount: 3
+  
+  # Quiet period перед сборкой (секунды)
+  quietPeriod: 5
+
+  # Безопасность
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          name: "Administrator"
+          # Пароль (измените на свой!)
+          # Лучше использовать переменные окружения: ${JENKINS_ADMIN_PASSWORD}
+          password: "admin"
+        # Дополнительные пользователи
+        # - id: "developer"
+        #   name: "Developer"
+        #   password: "developer123"
+
+  # Авторизация
+  authorizationStrategy:
+    roleBased:
+      roles:
+        global:
+          - name: "admin"
+            description: "Jenkins administrators"
+            permissions:
+              - "Overall/Administer"
+            entries:
+              - user: "admin"
+          - name: "developer"
+            description: "Developers with build access"
+            permissions:
+              - "Overall/Read"
+              - "Job/Build"
+              - "Job/Cancel"
+              - "Job/Read"
+              - "Job/Workspace"
+              - "Run/Replay"
+              - "Run/Update"
+              - "View/Read"
+            entries:
+              - group: "developers"
+          - name: "readonly"
+            description: "Read-only access"
+            permissions:
+              - "Overall/Read"
+              - "Job/Read"
+              - "View/Read"
+            entries:
+              - group: "authenticated"
+
+  # Глобальные переменные окружения
+  globalNodeProperties:
+    - envVars:
+        env:
+          - key: "JAVA_HOME"
+            value: "/usr/lib/jvm/java-17-openjdk-amd64"
+          - key: "PATH+EXTRA"
+            value: "/usr/local/bin"
+
+  # Настройки агентов
+  nodes:
+    # Пример статического агента
+    # - permanent:
+    #     name: "agent-01"
+    #     remoteFS: "/var/lib/jenkins-agent"
+    #     numExecutors: 4
+    #     labelString: "linux docker"
+    #     mode: NORMAL
+    #     launcher:
+    #       ssh:
+    #         host: "192.168.1.100"
+    #         port: 22
+    #         credentialsId: "agent-ssh-key"
+    #         javaPath: "/usr/bin/java"
+    #         sshHostKeyVerificationStrategy:
+    #           manuallyTrustedKeyVerificationStrategy:
+    #             requireInitialManualTrust: false
+
+  # Облака (Kubernetes, Docker и т.д.)
+  # clouds:
+  #   - kubernetes:
+  #       name: "kubernetes"
+  #       serverUrl: "https://kubernetes.default"
+  #       namespace: "jenkins"
+  #       jenkinsUrl: "http://jenkins:8080"
+  #       containerCapStr: "10"
+  #       templates:
+  #         - name: "jnlp"
+  #           label: "kubernetes"
+  #           containers:
+  #             - name: "jnlp"
+  #               image: "jenkins/inbound-agent:latest"
+  #               workingDir: "/home/jenkins/agent"
+  #               ttyEnabled: true
+
+# Unclassified настройки (плагины)
+unclassified:
+  # URL Jenkins
+  location:
+    url: "http://localhost:8080/"
+    adminAddress: "admin@localhost"
+  
+  # Git настройки
+  gitSCM:
+    globalConfigName: "Jenkins"
+    globalConfigEmail: "jenkins@localhost"
+  
+  # Настройки темы (Dark Theme)
+  themeManager:
+    disableUserThemes: false
+    theme: "darkSystem"
+  
+  # GitLab подключение
+  # gitLabConnectionConfig:
+  #   connections:
+  #     - name: "GitLab"
+  #       apiTokenId: "gitlab-api-token"
+  #       clientBuilderId: "autodetect"
+  #       connectionTimeout: 10
+  #       readTimeout: 10
+  #       url: "https://gitlab.example.com"
+  
+  # GitHub подключение
+  # githubPluginConfig:
+  #   configs:
+  #     - name: "GitHub"
+  #       apiUrl: "https://api.github.com"
+  #       credentialsId: "github-token"
+  #       manageHooks: true
+  
+  # Gitea/Forgejo подключение
+  # gitea:
+  #   servers:
+  #     - displayName: "Forgejo"
+  #       serverUrl: "https://forgejo.example.com"
+  #       credentialsId: "gitea-token"
+  #       manageHooks: true
+  
+  # Email уведомления
+  # mailer:
+  #   smtpHost: "smtp.example.com"
+  #   smtpPort: "587"
+  #   useSsl: false
+  #   useTls: true
+  #   charset: "UTF-8"
+  #   defaultSuffix: "@example.com"
+  #   authentication:
+  #     username: "jenkins@example.com"
+  #     password: "${SMTP_PASSWORD}"
+
+# Credentials (секреты)
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          # SSH ключ для Git
+          # - basicSSHUserPrivateKey:
+          #     scope: GLOBAL
+          #     id: "git-ssh-key"
+          #     username: "git"
+          #     description: "SSH key for Git repositories"
+          #     privateKeySource:
+          #       directEntry:
+          #         privateKey: "${GIT_SSH_KEY}"
+          
+          # GitLab API токен
+          # - gitLabApiTokenImpl:
+          #     scope: GLOBAL
+          #     id: "gitlab-api-token"
+          #     apiToken: "${GITLAB_API_TOKEN}"
+          #     description: "GitLab API Token"
+          
+          # GitHub токен
+          # - string:
+          #     scope: GLOBAL
+          #     id: "github-token"
+          #     secret: "${GITHUB_TOKEN}"
+          #     description: "GitHub Personal Access Token"
+          
+          # Docker Registry
+          # - usernamePassword:
+          #     scope: GLOBAL
+          #     id: "docker-registry"
+          #     username: "admin"
+          #     password: "${DOCKER_REGISTRY_PASSWORD}"
+          #     description: "Docker Registry Credentials"
+          
+          # Kubernetes config
+          # - file:
+          #     scope: GLOBAL
+          #     id: "kubeconfig"
+          #     fileName: "config"
+          #     secretBytes: "${KUBECONFIG_BASE64}"
+          #     description: "Kubernetes config file"
+
+# Jobs (можно создавать через Job DSL)
+jobs:
+  - script: |
+      // Пример Job DSL для создания pipeline
+      // pipelineJob('example-pipeline') {
+      //   description('Example pipeline created by JCasC')
+      //   definition {
+      //     cpsScm {
+      //       scm {
+      //         git {
+      //           remote {
+      //             url('https://github.com/example/repo.git')
+      //             credentials('github-token')
+      //           }
+      //           branches('*/main')
+      //         }
+      //       }
+      //       scriptPath('Jenkinsfile')
+      //     }
+      //   }
+      //   triggers {
+      //     scm('H/5 * * * *')
+      //   }
+      // }
+
+# Tool installations
+tool:
+  git:
+    installations:
+      - name: "Default"
+        home: "git"
+  
+  jdk:
+    installations:
+      - name: "JDK17"
+        home: "/usr/lib/jvm/java-17-openjdk-amd64"
+  
+  # Maven
+  # maven:
+  #   installations:
+  #     - name: "Maven 3"
+  #       properties:
+  #         - installSource:
+  #             installers:
+  #               - maven:
+  #                   id: "3.9.6"
+  
+  # NodeJS
+  # nodejs:
+  #   installations:
+  #     - name: "NodeJS 20"
+  #       properties:
+  #         - installSource:
+  #             installers:
+  #               - nodeJSInstaller:
+  #                   id: "20.10.0"
+  #                   npmPackagesRefreshHours: 72
+
