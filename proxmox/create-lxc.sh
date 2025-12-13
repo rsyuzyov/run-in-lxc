@@ -29,7 +29,7 @@ CT_IPV6="auto"
 CT_BRIDGE="vmbr0"
 CT_PASSWORD=""
 CT_SSH_KEY=""
-CT_UNPRIVILEGED="1"
+CT_UNPRIVILEGED="0"
 CT_FEATURES="nesting=1,keyctl=1"
 CT_START="0"
 CT_BOOTSTRAP="0"
@@ -84,7 +84,7 @@ show_help() {
   --ssh-key PATH          Путь к публичному SSH ключу
   
 Дополнительно:
-  --unprivileged 0|1      Непривилегированный контейнер (по умолчанию: 1)
+  --unprivileged 0|1      Непривилегированный контейнер (по умолчанию: 0)
   --features FEATURES     Возможности (по умолчанию: nesting=1,keyctl=1)
   --start                 Запустить контейнер после создания
   --bootstrap             Выполнить базовую настройку (обновление, локали, ssh)

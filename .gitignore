@@ -4,6 +4,7 @@ Thumbs.db
 
 # Logs
 *.log
+*.tmp
 
 # Temp
 tmp/
